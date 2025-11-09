@@ -1,90 +1,82 @@
 # report/sections/poc.py
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Image, KeepInFrame, Table
+from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
 from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_CENTER
-from PIL import Image as PILImage
-import io
-import base64
+import streamlit as st
 
-def add_poc(pdf, poc_list=None, **kwargs):
-    poc_list = poc_list or []
+def add_poc(pdf, poc_list):
     if not poc_list:
-        pdf.story.append(Paragraph("No PoC entries.", pdf.styles['Normal']))
-        pdf.story.append(PageBreak())
         return
 
-    pdf.story.append(Paragraph("Proof of Concept & Steps to Reproduce", pdf.styles['Heading1']))
-    pdf.story.append(Spacer(1, 0.2 * inch))
+    pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
+    pdf.story.append(Spacer(1, 0.4*inch))
 
-    for i, poc in enumerate(poc_list, 1):
-        pdf.story.append(Paragraph(f"7.{i} {poc.get('title', 'PoC')}", pdf.styles['Heading2']))
-        pdf.story.append(Spacer(1, 0.15 * inch))
+    for idx, poc in enumerate(poc_list):
+        title = poc.get("title", f"PoC {idx+1}")
+        code = poc.get("code", "")
+        images = poc.get("images", [])
 
-        # Descriere
-        if poc.get("description"):
-            pdf.story.append(Paragraph(f"<b>Description:</b> {poc['description']}", pdf.styles['Normal']))
-            pdf.story.append(Spacer(1, 0.1 * inch))
+        # === TITLU POC ===
+        pdf.story.append(Paragraph(f"{title}", pdf.styles['Heading2']))
+        pdf.story.append(Spacer(1, 0.25*inch))
 
- # === CODE BLOCK – STIL TERMINAL (NEGRU + VERDE) ===
-
-        code = f.get('code', '').strip()
+        # === CODE BLOCK – TERMINAL STYLE (EXACT CA FINDINGS) ===
         if code:
-            pdf.story.append(Paragraph("<b>Proof of Concept (Terminal):</b>", pdf.styles['Normal']))
+            pdf.story.append(Paragraph("Terminal", ParagraphStyle(
+                'Label', fontName='DejaVu-Bold', fontSize=11, textColor=colors.HexColor("#2E4057")
+            )))
+            pdf.story.append(Spacer(1, 0.1*inch))
 
-            # Split în linii
-            code_lines = code.split('\n')
-            if not code_lines:
-                code_lines = [""]
-
-            # Creează tabel cu fundal negru
-            code_data = []
-            for line in code_lines:
-                # Escape HTML special chars
-                safe_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                code_data.append([Paragraph(
-                    f"<font face='Courier' size=8 color='#00FF00'>{safe_line}</font>",
-                    pdf.styles['Normal']
-                )])
-
-            code_table = Table(code_data, colWidths=[6.5 * inch])
+            # Fundal negru + text verde + bordură + colțuri rotunjite
+            code_html = f"""
+            <font name="DejaVu" size=9 color="#c9d1d9">
+            {code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')}
+            </font>
+            """
+            code_para = Paragraph(code_html, pdf.styles['Code'])
+            code_table = Table([[code_para]], colWidths=6.5*inch)
             code_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#000000")),  # NEGRU
-                ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor("#00FF00")),   # VERDE
-                ('FONTNAME', (0, 0), (-1, -1), 'Courier'),
-                ('FONTSIZE', (0, 0), (-1, -1), 8),
-                ('LEFTPADDING', (0, 0), (-1, -1), 6),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-                ('TOPPADDING', (0, 0), (-1, -1), 2),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-                ('GRID', (0, 0), (-1, -1), 0.25, colors.HexColor("#333333")),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                ('LEADING', (0, 0), (-1, -1), 10),
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#0d1117")),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#30363d")),
+                ('ROUNDEDCORNERS', (0,0), (-1,-1), 6),
+                ('LEFTPADDING', (0,0), (-1,-1), 15),
+                ('RIGHTPADDING', (0,0), (-1,-1), 15),
+                ('TOPPADDING', (0,0), (-1,-1), 12),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 12),
             ]))
             pdf.story.append(code_table)
-            pdf.story.append(Spacer(1, 0.2 * inch))
+            pdf.story.append(Spacer(1, 0.3*inch))
 
-        # === IMAGINI (base64 strings) ===
-        for img_b64 in poc.get("images", []):
-            if not img_b64 or not isinstance(img_b64, str) or not img_b64.startswith("data:image"):
-                continue
-            try:
-                header, b64_data = img_b64.split(",", 1)
-                img_bytes = base64.b64decode(b64_data)
-                pil_img = PILImage.open(io.BytesIO(img_bytes)).convert("RGB")
+        # === IMAGINI POC ===
+        if images:
+            pdf.story.append(Paragraph("Screenshots", ParagraphStyle(
+                'Label', fontName='DejaVu-Bold', fontSize=11, textColor=colors.HexColor("#2E4057")
+            )))
+            pdf.story.append(Spacer(1, 0.1*inch))
 
-                buffer = io.BytesIO()
-                pil_img.save(buffer, format="JPEG", quality=85)
-                buffer.seek(0)
+            img_data = []
+            row = []
+            for img_b64 in images:
+                from reportlab.lib.utils import ImageReader
+                import io, base64
+                img_bytes = base64.b64decode(img_b64.split(',')[1])
+                img = ImageReader(io.BytesIO(img_bytes))
+                row.append(Image(img, width=3*inch, height=2*inch))
+                if len(row) == 2:
+                    img_data.append(row)
+                    row = []
+            if row:
+                img_data.append(row)
 
-                img = Image(buffer, width=6*inch, height=3.5*inch)
-                img.hAlign = TA_CENTER
-                framed = KeepInFrame(maxWidth=6*inch, maxHeight=4*inch, content=[img])
-                pdf.story.append(framed)
-                pdf.story.append(Spacer(1, 0.1 * inch))
+            img_table = Table(img_data, colWidths=3.2*inch)
+            img_table.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ]))
+            pdf.story.append(img_table)
+            pdf.story.append(Spacer(1, 0.2*inch))
 
-            except Exception as e:
-                pdf.story.append(Paragraph(f"[Image error: {e}]", pdf.styles['Normal']))
-
-        pdf.story.append(Spacer(1, 0.3 * inch))
-
-    pdf.story.append(PageBreak())
+        # === SPAȚIU MARE ÎNTRE POC-uri ===
+        pdf.story.append(Spacer(1, 0.6*inch))
+        pdf.story.append(Paragraph("<hr/>", pdf.styles['Normal']))
+        pdf.story.append(Spacer(1, 0.6*inch))

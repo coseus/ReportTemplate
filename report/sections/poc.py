@@ -1,82 +1,64 @@
 # report/sections/poc.py
-from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
-from reportlab.lib import colors
+from reportlab.platypus import Paragraph, Spacer, PageBreak, Image, KeepInFrame
 from reportlab.lib.units import inch
-import streamlit as st
+from reportlab.lib.enums import TA_CENTER
+import os
+import io
+from PIL import Image as PILImage
 
-def add_poc(pdf, poc_list):
+def add_poc(pdf, poc_list=None, **kwargs):
     if not poc_list:
+        poc_list = []
+
+    pdf.story.append(Paragraph("Proof of Concept & Steps to Reproduce", pdf.styles['Heading1']))
+    pdf.story.append(Spacer(1, 0.2 * inch))
+
+    if not poc_list:
+        pdf.story.append(Paragraph("No PoC entries.", pdf.styles['Normal']))
+        pdf.story.append(PageBreak())
         return
 
-    pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
-    pdf.story.append(Spacer(1, 0.4*inch))
+    for i, poc in enumerate(poc_list, 1):
+        # === 7.1 Titlu ===
+        pdf.story.append(Paragraph(f"7.{i} {poc.get('title', 'PoC')}", pdf.styles['Heading2']))
+        pdf.story.append(Spacer(1, 0.15 * inch))
 
-    for idx, poc in enumerate(poc_list):
-        title = poc.get("title", f"PoC {idx+1}")
-        code = poc.get("code", "")
-        images = poc.get("images", [])
+        # === Descriere ===
+        desc = poc.get("description", "").strip()
+        if desc:
+            pdf.story.append(Paragraph(f"<b>Description:</b> {desc}", pdf.styles['Normal']))
+            pdf.story.append(Spacer(1, 0.1 * inch))
 
-        # === TITLU POC ===
-        pdf.story.append(Paragraph(f"{title}", pdf.styles['Heading2']))
-        pdf.story.append(Spacer(1, 0.25*inch))
-
-        # === CODE BLOCK – TERMINAL STYLE (EXACT CA FINDINGS) ===
+        # === Cod ===
+        code = poc.get("code", "").strip()
         if code:
-            pdf.story.append(Paragraph("Terminal", ParagraphStyle(
-                'Label', fontName='DejaVu-Bold', fontSize=11, textColor=colors.HexColor("#2E4057")
-            )))
-            pdf.story.append(Spacer(1, 0.1*inch))
+            pdf.story.append(Paragraph("<b>Code:</b>", pdf.styles['Normal']))
+            code_block = f"<pre><font name='Courier'>{escape_html(code)}</font></pre>"
+            pdf.story.append(Paragraph(code_block, pdf.styles['Normal']))
+            pdf.story.append(Spacer(1, 0.1 * inch))
 
-            # Fundal negru + text verde + bordură + colțuri rotunjite
-            code_html = f"""
-            <font name="DejaVu" size=9 color="#c9d1d9">
-            {code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')}
-            </font>
-            """
-            code_para = Paragraph(code_html, pdf.styles['Code'])
-            code_table = Table([[code_para]], colWidths=6.5*inch)
-            code_table.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#0d1117")),
-                ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#30363d")),
-                ('ROUNDEDCORNERS', (0,0), (-1,-1), 6),
-                ('LEFTPADDING', (0,0), (-1,-1), 15),
-                ('RIGHTPADDING', (0,0), (-1,-1), 15),
-                ('TOPPADDING', (0,0), (-1,-1), 12),
-                ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-            ]))
-            pdf.story.append(code_table)
-            pdf.story.append(Spacer(1, 0.3*inch))
-
-        # === IMAGINI POC ===
+        # === Imagini ===
+        images = poc.get("images", [])
         if images:
-            pdf.story.append(Paragraph("Screenshots", ParagraphStyle(
-                'Label', fontName='DejaVu-Bold', fontSize=11, textColor=colors.HexColor("#2E4057")
-            )))
-            pdf.story.append(Spacer(1, 0.1*inch))
+            pdf.story.append(Paragraph("<b>Screenshots:</b>", pdf.styles['Normal']))
+            for img_idx, img_bytes in enumerate(images):
+                try:
+                    pil_img = PILImage.open(io.BytesIO(img_bytes)).convert("RGB")
+                    temp_path = f"temp_poc_{i}_{img_idx}.jpg"
+                    pil_img.save(temp_path, "JPEG")
+                    img = Image(temp_path, width=6*inch, height=3.5*inch)
+                    img.hAlign = TA_CENTER
+                    framed = KeepInFrame(maxWidth=6*inch, maxHeight=4*inch, content=[img])
+                    pdf.story.append(framed)
+                    pdf.story.append(Spacer(1, 0.1 * inch))
+                    os.remove(temp_path)
+                except Exception as e:
+                    pdf.story.append(Paragraph(f"[Image error: {e}]", pdf.styles['Normal']))
 
-            img_data = []
-            row = []
-            for img_b64 in images:
-                from reportlab.lib.utils import ImageReader
-                import io, base64
-                img_bytes = base64.b64decode(img_b64.split(',')[1])
-                img = ImageReader(io.BytesIO(img_bytes))
-                row.append(Image(img, width=3*inch, height=2*inch))
-                if len(row) == 2:
-                    img_data.append(row)
-                    row = []
-            if row:
-                img_data.append(row)
+        pdf.story.append(Spacer(1, 0.3 * inch))
 
-            img_table = Table(img_data, colWidths=3.2*inch)
-            img_table.setStyle(TableStyle([
-                ('VALIGN', (0,0), (-1,-1), 'TOP'),
-                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ]))
-            pdf.story.append(img_table)
-            pdf.story.append(Spacer(1, 0.2*inch))
+    pdf.story.append(PageBreak())
 
-        # === SPAȚIU MARE ÎNTRE POC-uri ===
-        pdf.story.append(Spacer(1, 0.6*inch))
-        pdf.story.append(Paragraph("<hr/>", pdf.styles['Normal']))
-        pdf.story.append(Spacer(1, 0.6*inch))
+
+def escape_html(text):
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

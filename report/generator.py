@@ -10,7 +10,7 @@ from reportlab.lib.enums import TA_CENTER
 # Import secțiuni
 from .sections.cover import add_cover
 from .sections.toc import add_toc
-from .sections.legal import add_legal_and_contact
+from .sections.legal import add_legal
 from .sections.overview import add_assessment_overview
 from .sections.scope import add_scope
 from .sections.severity import add_severity_ratings

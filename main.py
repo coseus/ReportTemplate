@@ -6,7 +6,7 @@ from components.general import render as general_tab
 from components.scope import render as scope_tab
 from components.findings import render as findings_tab
 from components.exec_summary import render as exec_tab
-from report.sections.executive import render as executive_summary
+from report.sections.executive import render as add_executive_summary
 from components.poc import render as poc_tab
 from components.export import render as export_tab  # ← FUNCȚIONAL
 from components.legal import render as legal_tab
@@ -45,7 +45,7 @@ with tab1:
 #    render_contacts()
 with tab2: scope_tab()
 with tab3: findings_tab()
-with tab4: executive_summary()
+with tab4: add_executive_summary()
 with tab5: poc_tab()
 #with tab6: legal_tab()       # ← NOU
 #with tab7: severity_tab()    # ← NOU

@@ -78,6 +78,17 @@ class PDFReport:
             borderWidth=1,
             borderRadius=6
         )
+        # În __init__() – stil Normal cu leading mare
+        'Normal': ParagraphStyle(
+            'Normal',
+            parent=styles['Normal'],
+            fontName='DejaVu',
+            fontSize=11,
+            leading=16,           # SPAȚIU MARE ÎNTRE RÂNDURI
+            alignment=TA_JUSTIFY,
+            spaceAfter=8
+        ),
+
         return styles
 
     def _header(self, canvas, doc):

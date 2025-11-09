@@ -66,8 +66,8 @@ def render():
     # Inițializează lista
     if "contacts" not in st.session_state:
         st.session_state.contacts = [
-            {"name": "Cosmin Ivascu", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
-            {"name": "Electrogrup S.A", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
+            {"name": "Name", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
+            {"name": "Company", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
             {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
         ]
 

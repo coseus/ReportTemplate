@@ -21,7 +21,7 @@ def severity_color(severity):
 def add_technical_findings(pdf, findings=None, **kwargs):
     findings = findings or []
     pdf.story.append(Paragraph("6. Technical Findings", pdf.styles['Heading1']))
-    pdf.story.append(Spacer(1, 0.2 * inch))
+    pdf.story.append(Spacer(1, 0.25 * inch))
 
     for i, f in enumerate(findings, 1):
         # === TITLU + ID + HOST ===
@@ -43,7 +43,7 @@ def add_technical_findings(pdf, findings=None, **kwargs):
         description = f.get('description', '')
         if description:
             pdf.story.append(Paragraph(description, pdf.styles['Normal']))
-        pdf.story.append(Spacer(1, 0.1 * inch))
+        pdf.story.append(Spacer(1, 0.25 * inch))
 
         # === CODE BLOCK – STIL TERMINAL (NEGRU + VERDE) ===
         code = f.get('code', '').strip()
@@ -80,7 +80,7 @@ def add_technical_findings(pdf, findings=None, **kwargs):
                 ('LEADING', (0, 0), (-1, -1), 10),
             ]))
             pdf.story.append(code_table)
-            pdf.story.append(Spacer(1, 0.2 * inch))
+            pdf.story.append(Spacer(1, 0.25 * inch))
 
         # === IMAGINI ===
         for img_b64 in f.get('images', []):
@@ -93,7 +93,7 @@ def add_technical_findings(pdf, findings=None, **kwargs):
                 img = RLImage(img_stream, width=6 * inch, height=3 * inch)
                 img.hAlign = 'CENTER'
                 pdf.story.append(img)
-                pdf.story.append(Spacer(1, 0.2 * inch))
+                pdf.story.append(Spacer(1, 0.25 * inch))
             except Exception as e:
                 pdf.story.append(Paragraph(f"[Image load error: {str(e)}]", pdf.styles['Normal']))
 

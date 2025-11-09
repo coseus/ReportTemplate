@@ -18,7 +18,7 @@ from report.sections.contact import add_contact_section
 from .sections.overview import add_overview
 from .sections.scope import add_scope
 from .sections.severity import add_severity_ratings
-from .sections.executive import executive_summary
+from .sections.executive import add_executive_summary
 from .sections.findings import add_technical_findings
 from .sections.poc import add_poc
 
@@ -160,7 +160,7 @@ class PDFReport:
         self.story.append(PageBreak())
 
         # PAGINA 5 – EXECUTIVE
-        executive_summary(self, findings=findings, executive_text=executive_text)
+        add_executive_summary(self, findings=findings, executive_text=executive_text)
         self.story.append(PageBreak())
 
         # PAGINA 6+ – FINDINGS

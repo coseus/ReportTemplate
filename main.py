@@ -35,7 +35,7 @@ if 'severity_ratings' not in st.session_state:
 # Taburi
 tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "General Info", "Scope", "Findings", "Executive Summary", 
-    "PoC", "Legal", "Export"
+    "PoC", "Export"
 ])
 
 with tab1: general_tab()
@@ -43,6 +43,6 @@ with tab2: scope_tab()
 with tab3: findings_tab()
 with tab4: render_executive_summary()
 with tab5: poc_tab()
-with tab6: legal_tab()       # ← NOU
+#with tab6: legal_tab()       # ← NOU
 #with tab7: severity_tab()    # ← NOU
-with tab7: export_tab()
+with tab6: export_tab()

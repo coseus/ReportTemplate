@@ -9,7 +9,7 @@ import pandas as pd
 import plotly.express as px
 
 # === PENTRU PDF ===
-def executive_summary(pdf, findings, executive_text="", **kwargs):
+def add_executive_summary(pdf, findings, executive_text="", **kwargs):
     pdf.story.append(Paragraph("Executive Summary", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 12))
 

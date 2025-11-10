@@ -5,7 +5,7 @@ from reportlab.lib.units import inch
 import streamlit as st
 
 def add_poc(pdf, pocs):
-    if not poc_list:
+    if not pocs:
         return
 
     pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))

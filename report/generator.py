@@ -97,7 +97,7 @@ class PDFReport:
             add_cover(self, **kwargs)
             self.story.append(PageBreak())
     
-            add_toc(self, findings=st.session_state.get("findings", pocs=st.session_state.get("pocs", []))
+            add_toc(self, findings=st.session_state.get("findings", []), pocs=st.session_state.get("pocs", [])
             self.story.append(PageBreak())
     
             add_legal(self)

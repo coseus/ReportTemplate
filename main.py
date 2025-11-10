@@ -5,7 +5,7 @@ from components.general import render as general_tab
 from components.scope import render as scope_tab
 from components.findings import render as findings_tab
 #from components.exec_summary import render as exec_tab
-from components.executive import render_ui as executive_tab
+from components.executive import render as executive_tab
 from components.poc import render as poc_tab
 from components.export import render as export_tab  # ← FUNCȚIONAL
 from components.legal import render as legal_tab

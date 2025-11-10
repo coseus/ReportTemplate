@@ -2,8 +2,8 @@
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.piecharts import Pie
-from reportlab.lib.colors import HexColor  # ← IMPORT CRITIC
-from reportlab.lib import colors  # ← SAU ASTA (pentru .red, .grey etc.)
+from reportlab.lib.colors import HexColor  
+from reportlab.lib import colors  
 from reportlab.lib.units import inch
 import streamlit as st
 import pandas as pd

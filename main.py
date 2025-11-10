@@ -1,6 +1,17 @@
 # main.py
 import streamlit as st
 
+# === OPRIRE DEBUG + WARNING-URI ===
+st.set_option('deprecation.showPyplotGlobalUse', False)
+st.set_option('deprecation.showfileUploaderEncoding', False)
+st.set_option('deprecation.showImageFormat', False)
+st.set_option('client.showErrorDetails', False)  # ascunde detalii erori
+
+# === SILENȚIOZĂ COMPLETĂ (OPRIT DEBUG) ===
+import logging
+logging.getLogger("watchdog").setLevel(logging.WARNING)
+logging.getLogger("streamlit").setLevel(logging.ERROR)
+
 # ================================================================
 # 1. NU INIȚIALIZĂM NIMIC LA ÎNCEPUT
 # ================================================================

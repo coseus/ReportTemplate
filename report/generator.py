@@ -62,8 +62,19 @@ class PDFReport:
             'Heading2': ParagraphStyle('Heading2', fontName=self.font_name, fontSize=14, textColor=colors.HexColor("#2E4057")),
             'Normal': ParagraphStyle('Normal', fontName=self.font_name, fontSize=11, leading=16, alignment=TA_JUSTIFY),
             'Code': ParagraphStyle('Code', fontName='Courier', fontSize=9, backColor=colors.HexColor("#0d1117"), textColor=colors.HexColor("#c9d1d9"), borderPadding=10, borderColor=colors.HexColor("#30363d"), borderWidth=1, borderRadius=6),
+        
+            # ← ADAUGĂ ACEST STIL NOU
+            'Confidential': ParagraphStyle(
+                'Confidential',
+                fontName=self.font_name,
+                fontSize=20,
+                leading=28,
+                alignment=TA_CENTER,
+                textColor=colors.HexColor("#dc2626"),  # roșu intens
+                spaceAfter=60,
+                fontWeight='bold'
+            ),
         }
-
     def generate(self, **kwargs):
         try:
             from .sections.cover import add_cover

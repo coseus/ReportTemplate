@@ -16,13 +16,13 @@ def add_overview(pdf, overview_text=None, **kwargs):
     overview_text = overview_text or st.session_state.get("overview_text", "No overview provided.")
     
     pdf.story.append(Paragraph("Assessment Overview", pdf.styles['Heading1']))
-    pdf.story.append(Spacer(1, 0.3 * inch))
+    pdf.story.append(Spacer(1, 0.6 * inch))
     
     # Split în paragrafe
     paragraphs = [p.strip() for p in overview_text.split("\n") if p.strip()]
     for para in paragraphs:
         pdf.story.append(Paragraph(para, pdf.styles['Normal']))
-        pdf.story.append(Spacer(1, 0.3 * inch))
+        pdf.story.append(Spacer(1, 0.4 * inch))
     
     pdf.story.append(PageBreak())
 '''

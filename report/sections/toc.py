@@ -21,7 +21,7 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
 
     data = [["Page", "Section"]]
 
-    # === SECȚIUNI FIXE ===
+    # === SECȚIUNI FIXE (fără Technical Findings și Proof of Concept în listă fixă) ===
     fixed = [
         "1 Cover Page",
         "2 Table of Contents",
@@ -30,14 +30,16 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
         "4 Scope of Testing",
         "4 Severity Ratings",
         "5 Executive Summary",
-        "6 Technical Findings",
-        "7 Proof of Concept"
     ]
     for sec in fixed:
         page, text = sec.split(" ", 1)
         data.append([Paragraph(page, pdf.styles['Normal']), Paragraph(text, pdf.styles['Normal'])])
 
-    # === 6.1, 6.2... Findings ===
+    # === 6 Technical Findings – apare doar dacă există findings ===
+    if findings:
+        data.append([Paragraph("6", pdf.styles['Normal']), Paragraph("Technical Findings", pdf.styles['Normal'])])
+
+    # === 6.1, 6.2... Findings (doar ce ai adăugat tu) ===
     order = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3, "Informational": 4}
     sorted_findings = sorted(findings, key=lambda f: order.get(f.get("severity", ""), 5))
     for i, f in enumerate(sorted_findings, 1):
@@ -47,7 +49,11 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
         colored = f"<font color='{severity_color(f.get('severity', ''))}'>{fid}</font> - {short}"
         data.append(["", Paragraph(f"  6.{i} {colored}", pdf.styles['Normal'])])
 
-    # === 7.1, 7.2... POC ===
+    # === 7 Proof of Concept – apare doar dacă există PoC-uri ===
+    if pocs:
+        data.append([Paragraph("7", pdf.styles['Normal']), Paragraph("Proof of Concept", pdf.styles['Normal'])])
+
+    # === 7.1, 7.2... PoC-uri (doar ce ai adăugat tu) ===
     for i, poc in enumerate(pocs, 1):
         title = poc.get("title", f"PoC {i}")
         short = title if len(title) <= 60 else title[:57] + "..."

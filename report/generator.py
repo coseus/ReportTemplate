@@ -12,10 +12,18 @@ from pathlib import Path
 import base64
 import io
 
-# === FONT ROMÂNESC ===
+# === FONT ROMÂNESC – CU TRY/EXCEPT + FALLBACK ===
 font_path = Path(__file__).parent.parent / "assets" / "fonts" / "DejaVuSans.ttf"
-if font_path.exists():
-    pdfmetrics.registerFont(TTFont("DejaVu", str(font_path)))
+
+try:
+    if font_path.exists():
+        pdfmetrics.registerFont(TTFont("DejaVu", str(font_path)))
+        FONT_NAME = "DejaVu"
+    else:
+        FONT_NAME = "Helvetica"  # fallback
+except Exception as e:
+    print(f"[WARNING] DejaVuSans.ttf nu poate fi încărcat: {e}")
+    FONT_NAME = "Helvetica"
 
 class PDFReport:
     def __init__(self, logo_path=None, watermark=False):

@@ -14,7 +14,7 @@ def severity_color(sev):
 
 def add_toc(pdf, findings=None, pocs=None, **kwargs):
     findings = findings or []
-    pocs = poc_list or []
+    pocs = pocs or []
 
     pdf.story.append(Paragraph("Table of Contents", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.3 * inch))

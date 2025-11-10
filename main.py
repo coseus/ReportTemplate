@@ -41,7 +41,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 with tab1: general_tab()
 with tab2: scope_tab()
 with tab3: findings_tab()
-with tab4: executive_summary()
+with tab4: executive_tab()
 with tab5: poc_tab()
 #with tab6: legal_tab()       # ← NOU
 #with tab7: severity_tab()    # ← NOU

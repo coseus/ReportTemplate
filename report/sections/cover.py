@@ -83,4 +83,4 @@ def add_cover(pdf, client=None, project=None, tester=None, date=None, **kwargs):
     conf_para.hAlign = 'CENTER'
     pdf.story.append(conf_para)
 
-    pdf.story.append(PageBreak())
+    #pdf.story.append(PageBreak())

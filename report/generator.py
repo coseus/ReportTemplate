@@ -13,17 +13,23 @@ import base64
 import io
 
 # === FONT ROMÂNESC – CU TRY/EXCEPT + FALLBACK ===
-font_path = Path(__file__).parent.parent / "assets" / "fonts" / "DejaVuSans.ttf"
+fonts_dir = Path(__file__).parent.parent / "assets" / "fonts"
+dejavu = fonts_dir / "dejavu-sans.book.ttf"
+dejavu_bold = fonts_dir / "dejavu-sans.bold.ttf"
+dejavu_italic = fonts_dir / "dejavu-sans.oblique.ttf"
+dejavu_bolditalic = fonts_dir / "dejavu-sans.bold-oblique.ttf"
 
-try:
-    if font_path.exists():
-        pdfmetrics.registerFont(TTFont("DejaVu", str(font_path)))
-        FONT_NAME = "DejaVu"
-    else:
-        FONT_NAME = "Helvetica"  # fallback
+pdfmetrics.registerFontFamily(
+        "DejaVu",
+        normal="DejaVu",
+        bold="DejaVu-Bold",
+        italic="DejaVu-Italic",
+        boldItalic="DejaVu-BoldItalic"
+    )
+    BASE_FONT = "DejaVu"
 except Exception as e:
-    print(f"[WARNING] DejaVuSans.ttf nu poate fi încărcat: {e}")
-    FONT_NAME = "Helvetica"
+    print(f"[FALLBACK] DejaVu fonts failed: {e}")
+    BASE_FONT = "Helvetica"
 
 class PDFReport:
     def __init__(self, logo_path=None, watermark=False):
@@ -42,14 +48,56 @@ class PDFReport:
 
         # === STILURI CU DEJAVU ===
         styles = getSampleStyleSheet()
+        
         self.styles = {
-            'Title': ParagraphStyle('Title', parent=styles['Title'], fontName='DejaVu', fontSize=24, alignment=TA_CENTER, textColor=colors.HexColor("#003366")),
-            'Heading1': ParagraphStyle('Heading1', parent=styles['Heading1'], fontName='DejaVu', fontSize=18),
-            'Heading2': ParagraphStyle('Heading2', parent=styles['Heading2'], fontName='DejaVu', fontSize=14, textColor=colors.HexColor("#2E4057")),
-            'Normal': ParagraphStyle('Normal', parent=styles['Normal'], fontName='DejaVu', fontSize=11, leading=16, alignment=TA_JUSTIFY),
-            'Code': ParagraphStyle('Code', fontName='DejaVu', fontSize=9, leading=12, backColor=colors.HexColor("#0d1117"), textColor=colors.HexColor("#c9d1d9"), leftIndent=15, rightIndent=15, spaceBefore=12, spaceAfter=12, borderPadding=10, borderColor=colors.HexColor("#30363d"), borderWidth=1, borderRadius=6),
+            'Title': ParagraphStyle(
+                'Title',
+                fontName=BASE_FONT,
+                fontSize=42,
+                leading=48,
+                alignment=TA_CENTER,
+                textColor=colors.HexColor("#003366"),
+                spaceAfter=30
+            ),
+            'Heading1': ParagraphStyle(
+                'Heading1',
+                fontName=BASE_FONT,
+                fontSize=18,
+                leading=24,
+                spaceBefore=20,
+                spaceAfter=10
+            ),
+            'Heading2': ParagraphStyle(
+                'Heading2',
+                fontName=BASE_FONT,
+                fontSize=14,
+                leading=18,
+                textColor=colors.HexColor("#2E4057")
+            ),
+            'Normal': ParagraphStyle(
+                'Normal',
+                fontName=BASE_FONT,
+                fontSize=11,
+                leading=16,
+                alignment=TA_JUSTIFY
+            ),
+            'Code': ParagraphStyle(
+                'Code',
+                fontName='Courier',
+                fontSize=9,
+                leading=12,
+                backColor=colors.HexColor("#0d1117"),
+                textColor=colors.HexColor("#c9d1d9"),
+                leftIndent=15,
+                rightIndent=15,
+                spaceBefore=12,
+                spaceAfter=12,
+                borderPadding=10,
+                borderColor=colors.HexColor("#30363d"),
+                borderWidth=1,
+                borderRadius=6
+            )
         }
-
     def add_logo_header(self):
         if self.logo_path:
             try:

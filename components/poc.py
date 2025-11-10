@@ -4,10 +4,10 @@ import base64
 import uuid
 
 def render():
-    # PROTECȚIE EXTRA
-    if 'pocs' not in st.session_state:
-        st.session_state.pocs = []
-
+    # ==================== INIȚIALIZARE LA RULARE (NU LA IMPORT!) ====================
+    # Folosim .get() + setdefault() → 100% sigur, chiar dacă main.py uită
+    st.session_state.setdefault("pocs", [])
+    
     st.subheader("Proof of Concept")
 
     # === ADD NEW POC ===
@@ -36,12 +36,11 @@ def render():
             st.success(f"PoC added! (ID: {poc_id})")
             st.rerun()
 
-    # === LISTĂ POC – FĂRĂ `return`! ===
+    # === LISTĂ POC ===
     st.markdown("### Current PoCs")
 
     if not st.session_state.pocs:
         st.info("No PoC added yet. Use the form above to create one.")
-        # NU MAI FACEM return → lăsăm să continue
     else:
         for i in range(len(st.session_state.pocs)-1, -1, -1):
             poc = st.session_state.pocs[i]

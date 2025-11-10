@@ -4,8 +4,8 @@ import base64
 import uuid
 
 def render():
-    # PROTECȚIE ABSOLUTĂ – chiar dacă main.py uită
-    if "pocs" not in st.session_state:
+    # PROTECȚIE EXTRA
+    if 'pocs' not in st.session_state:
         st.session_state.pocs = []
 
     st.subheader("Proof of Concept")
@@ -16,8 +16,8 @@ def render():
         code = st.text_area("Terminal Code", height=150, key="poc_code",
                             placeholder="┌──(root㉿kali)-[~]\n└─# responder -I eth0")
         imgs = st.file_uploader("Screenshots", type=["png","jpg","jpeg"], 
-                                accept_multiple_files=True, key="poc_imgs")
-        
+                                accept_multiple_files=True, key="poc_screenshots")
+
         images_b64 = []
         for img in imgs:
             b64 = base64.b64encode(img.read()).decode()
@@ -36,16 +36,15 @@ def render():
             st.rerun()
 
     st.markdown("### Current PoCs")
-    
     if not st.session_state.pocs:
         st.info("No PoC added yet.")
         return
 
-    for i in range(len(st.session_state.pocs) - 1, -1, -1):
+    for i in range(len(st.session_state.pocs)-1, -1, -1):
         poc = st.session_state.pocs[i]
         poc_id = poc.get("id", f"temp_{i}")
-        
-        with st.expander(f"**{poc.get('title', 'Untitled PoC')}** (ID: {poc_id})"):
+
+        with st.expander(f"**{poc.get('title','Untitled PoC')}** (ID: {poc_id})"):
             col1, col2 = st.columns([3, 1])
             with col1:
                 if poc.get("description"):
@@ -64,4 +63,4 @@ def render():
                     with cols[j]:
                         st.image(img, use_column_width=True)
                 if len(poc["images"]) > 3:
-                    st.caption(f"+ {len(poc['images'])-3} more images")
+                    st.caption(f"+ {len(poc['images'])-3} more")

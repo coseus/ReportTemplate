@@ -1,4 +1,17 @@
-# report/sections/toc.py – DOAR ADAUGĂ ASTA SUS (după importuri)
+# report/sections/toc.py
+from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+
+def severity_color(sev):
+    return {
+        "Critical": "#dc2626",
+        "High": "#f97316",
+        "Moderate": "#facc15",
+        "Low": "#10b981",
+        "Informational": "#6366f1"
+    }.get(sev, "#000000")
+
 def add_toc(pdf, findings=None, pocs=None, **kwargs):
     findings = findings or []
     pocs = pocs or []
@@ -18,7 +31,7 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
         "4 Severity Ratings",
         "5 Executive Summary",
         "6 Technical Findings",
-        "7 Proof of Concept"   # ← ACUM APARE ÎN TOC!
+        "7 Proof of Concept"
     ]
     for sec in fixed:
         page, text = sec.split(" ", 1)
@@ -29,12 +42,12 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
     sorted_findings = sorted(findings, key=lambda f: order.get(f.get("severity", ""), 5))
     for i, f in enumerate(sorted_findings, 1):
         fid = f.get("id", "VULN")
-        title = f.get("title", "")
+        title = f.get("title", "Untitled")
         short = title if len(title) <= 55 else title[:52] + "..."
-        colored = f"<font color='#dc2626'>{fid}</font> - {short}"
+        colored = f"<font color='{severity_color(f.get('severity', ''))}'>{fid}</font> - {short}"
         data.append(["", Paragraph(f"  6.{i} {colored}", pdf.styles['Normal'])])
 
-    # === 7.1, 7.2... POC-urile tale ===
+    # === 7.1, 7.2... POC ===
     for i, poc in enumerate(pocs, 1):
         title = poc.get("title", f"PoC {i}")
         short = title if len(title) <= 60 else title[:57] + "..."

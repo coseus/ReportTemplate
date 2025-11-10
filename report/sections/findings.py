@@ -29,6 +29,7 @@ def add_technical_findings(pdf, findings=None, **kwargs):
             f"<b>6.{i} {f.get('id', 'N/A')} - {f.get('title', 'No Title')}</b>",
             pdf.styles['Heading2']
         ))
+        pdf.story.append(Spacer(1, 0.4 * inch))
         pdf.story.append(Paragraph(f"<b>Host:</b> {f.get('host', 'N/A')}", pdf.styles['Normal']))
         pdf.story.append(Spacer(1, 0.4 * inch))
         pdf.story.append(Paragraph(f"<b>CVSS:</b> {f.get('cvss', 'N/A')}", pdf.styles['Normal']))

@@ -69,7 +69,7 @@ class PDFReport:
             borderColor=colors.HexColor("#30363d"),
             borderWidth=1,
             borderRadius=6
-        )
+        ))
         return styles
 
     def generate(self, findings, client, project, pocs=None, 

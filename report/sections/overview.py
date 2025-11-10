@@ -8,8 +8,14 @@ from reportlab.platypus import Paragraph
 def add_overview(pdf, **kwargs):
     overview_text = st.session_state.get("overview_text", "No overview provided.")
     pdf.story.append(Paragraph("<b>Assessment Overview</b>", pdf.styles['Heading2']))
-    pdf.story.append(Paragraph(overview_text, pdf.styles['Normal']))
-    pdf.story.append(Paragraph("<br/>", pdf.styles['Normal']))
+    pdf.story.append(Spacer(1, 0.4 * inch))
+        # Split în paragrafe
+    paragraphs = [p.strip() for p in overview_text.split("\n") if p.strip()]
+    for para in paragraphs:
+        pdf.story.append(Paragraph(para, pdf.styles['Normal']))
+        pdf.story.append(Spacer(1, 0.4 * inch))
+    #pdf.story.append(Paragraph(overview_text, pdf.styles['Normal']))
+    #pdf.story.append(Paragraph("<br/>", pdf.styles['Normal']))
 
 '''
 def add_overview(pdf, overview_text=None, **kwargs):

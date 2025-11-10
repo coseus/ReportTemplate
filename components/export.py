@@ -70,7 +70,7 @@ def render():
                 date=st.session_state.get("date"),
                 scope=st.session_state.get("scope", ""),
                 overview_text=st.session_state.get("overview_text", ""),
-                poc_list=st.session_state.poc_list
+                poc_list=st.session_state.pocs
             )
             pdf_filename = f"{st.session_state.get('project', 'report').replace(' ', '_')}_report.pdf"
             st.download_button("Download PDF", pdf_bytes, pdf_filename, "application/pdf")
@@ -165,7 +165,7 @@ def render():
                         date=st.session_state.get("date"),
                         scope=st.session_state.get("scope"),
                         overview_text=st.session_state.get("overview_text"),
-                        poc_list=st.session_state.poc_list
+                        poc_list=st.session_state.pocs
                     )
     
                     # === GEN DOCX ===

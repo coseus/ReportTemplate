@@ -5,10 +5,6 @@ import logging
 # === OPRIRE DEBUG + WARNING-URI CORECTE (Streamlit 1.39+) ===
 logging.getLogger("watchdog").setLevel(logging.WARNING)
 logging.getLogger("streamlit").setLevel(logging.ERROR)
-
-# === DOAR ACESTE OPȚIUNI MAI EXISTĂ ȘI FUNCȚIONEAZĂ ===
-st.set_option('deprecation.showfileUploaderEncoding', False)
-
 # ================================================================
 # 1. NU INIȚIALIZĂM NIMIC LA ÎNCEPUT
 # ================================================================

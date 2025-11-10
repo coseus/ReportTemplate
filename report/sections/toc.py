@@ -12,9 +12,9 @@ def severity_color(sev):
         "Informational": "#6366f1"
     }.get(sev, "#000000")
 
-def add_toc(pdf, findings=None, poc_list=None, **kwargs):
+def add_toc(pdf, findings=None, pocs=None, **kwargs):
     findings = findings or []
-    poc_list = poc_list or []
+    pocs = poc_list or []
 
     pdf.story.append(Paragraph("Table of Contents", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.3 * inch))
@@ -50,7 +50,7 @@ def add_toc(pdf, findings=None, poc_list=None, **kwargs):
     data.append(["7", "Steps to Reproduce", ""])
 
     # === POC → 7.1, 7.2 (INDENTAT CU 4 SPAȚII) ===
-    for i, poc in enumerate(poc_list, 1):
+    for i, poc in enumerate(pocs, 1):
         title = poc.get("title", f"PoC {i}")
         data.append([f"7.{i}", f"    {title}", ""])  # ← 7.1 INDENTAT
 

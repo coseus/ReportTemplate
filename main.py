@@ -1,22 +1,7 @@
 # main.py
-# main.py
-import streamlit as st
-from components.general import render as general_tab
-from components.scope import render as scope_tab
-from components.findings import render as findings_tab
-#from components.exec_summary import render as exec_tab
-from components.executive import render as executive_tab
-from components.poc import render as poc_tab
-from components.export import render as export_tab  # ← FUNCȚIONAL
-from components.legal import render as legal_tab
-from components.severity import render as severity_tab
-
-
-# ... restul codului rămâne la fel
-st.set_page_config(page_title="Raport Pentest", layout="wide")
-st.title("PENTEST REPORT GENERATOR")
-
-# Inițializare
+# ================================================================
+# FORȚĂM INIȚIALIZAREA – PRIMUL LUCRU EXECUTAT
+# ================================================================
 if 'findings' not in st.session_state:
     st.session_state.findings = []
 if 'pocs' not in st.session_state:
@@ -31,8 +16,29 @@ if 'disclaimer' not in st.session_state:
     st.session_state.disclaimer = ""
 if 'severity_ratings' not in st.session_state:
     st.session_state.severity_ratings = ""
+# ================================================================
+# IMPORTURI DOAR DUPĂ INIȚIALIZARE
+# ================================================================
 
-# Taburi
+import streamlit as st
+from components.general import render as general_tab
+from components.scope import render as scope_tab
+from components.findings import render as findings_tab
+#from components.exec_summary import render as exec_tab
+from components.executive import render as executive_tab
+from components.poc import render as poc_tab
+from components.export import render as export_tab  # ← FUNCȚIONAL
+from components.legal import render as legal_tab
+from components.severity import render as severity_tab
+
+
+st.set_page_config(page_title="Raport Pentest", layout="wide")
+st.title("PENTEST REPORT GENERATOR")
+
+
+# ================================================================
+# TABURI
+# ================================================================
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "General Info", "Scope", "Findings", "Executive Summary", 
     "PoC", "Export"
@@ -43,6 +49,4 @@ with tab2: scope_tab()
 with tab3: findings_tab()
 with tab4: executive_tab()
 with tab5: poc_tab()
-#with tab6: legal_tab()       # ← NOU
-#with tab7: severity_tab()    # ← NOU
 with tab6: export_tab()

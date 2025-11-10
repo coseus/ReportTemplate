@@ -61,6 +61,7 @@ def add_executive_summary(pdf, findings, executive_text="", **kwargs):
 # ================================================================
 def render_ui():
     st.subheader("Executive Summary")
+    
     if not st.session_state.get("findings"):
         st.info("No findings yet.")
         return

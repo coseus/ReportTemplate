@@ -29,9 +29,9 @@ def add_poc(pdf, pocs):
                             fontSize=9,
                             leading=12
                         )
-                        code_text = poc["code"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                        pdf.story.append(Paragraph(f"<font name='Courier'>{code_text}</font>", terminal_style))
-                        pdf.story.append(Spacer(1, 0.4*inch))
+            code_text = poc["code"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            pdf.story.append(Paragraph(f"<font name='Courier'>{code_text}</font>", terminal_style))
+            pdf.story.append(Spacer(1, 0.4*inch))
 
         # === IMAGINI POC ===
         if images:

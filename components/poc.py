@@ -3,60 +3,55 @@ import streamlit as st
 import base64
 
 def render():
-    st.subheader("Proof of Concept (Manual)")
+    st.subheader("Proof of Concept")
+
+    # === BACKUP – în caz că nu e inițializat în main.py ===
+    if "poc_list" not in st.session_state:
+        st.session_state.poc_list = []
 
     # === ADD NEW POC ===
-    with st.expander("Add New PoC", expanded=False):
-        title = st.text_input("PoC Title", placeholder="PoC-001", key="poc_add_title")
-        desc = st.text_area("Description", height=100, key="poc_add_desc")
-        code = st.text_area("Code / Exploit", height=150, key="poc_add_code")
-        uploaded_images = st.file_uploader("Screenshots", accept_multiple_files=True, type=["png", "jpg", "jpeg"], key="poc_add_images")
+    with st.expander("Add New PoC", expanded=True):
+        title = st.text_input("Title", "SMB Relay Attack", key="poc_title")
+        description = st.text_area("Description", height=100, key="poc_desc")
+        code = st.text_area("Terminal Code", height=150, key="poc_code", placeholder="┌──(root㉿kali)-[~]\n└─# responder -I eth0")
+        
+        uploaded_imgs = st.file_uploader("Screenshots", type=["png","jpg","jpeg"], accept_multiple_files=True, key="poc_imgs")
+        images_b64 = []
+        for img in uploaded_imgs:
+            b64 = base64.b64encode(img.read()).decode()
+            images_b64.append(f"data:{img.type};base64,{b64}")
 
-        if st.button("Add PoC", key="poc_add_btn"):
-            if not title.strip():
-                st.error("Title required!")
-            else:
-                images_b64 = []
-                for img in uploaded_images:
-                    try:
-                        img_bytes = img.read()
-                        img_type = img.type
-                        ext = img_type.split("/")[-1].split(";")[0]
-                        b64_str = f"data:image/{ext};base64,{base64.b64encode(img_bytes).decode()}"
-                        images_b64.append(b64_str)
-                    except Exception as e:
-                        st.error(f"Invalid image {img.name}: {e}")
-
-                new_poc = {
-                    "title": title,
-                    "description": desc,
-                    "code": code,
-                    "images": images_b64
-                }
-                st.session_state.poc_list.append(new_poc)
-                st.success("PoC added!")
-                st.rerun()
+        if st.button("Add PoC", type="primary"):
+            poc = {
+                "title": title,
+                "description": description,
+                "code": code,
+                "images": images_b64
+            }
+            st.session_state.poc_list.append(poc)
+            st.success("PoC added!")
+            st.rerun()
 
     # === LISTĂ POC ===
-    for idx, poc in enumerate(st.session_state.poc_list):
-        with st.expander(f"{poc['title']} (ID: {idx})", expanded=False):
-            st.write(poc.get("description", ""))
-            if poc.get("code"):
-                st.code(poc["code"], language=None)
+    st.markdown("### Current PoCs")
+    if st.session_state.poc_list:
+        for idx, poc in enumerate(st.session_state.poc_list):
+            with st.expander(f"{poc.get('title','PoC')} (ID: {idx})", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(poc.get("description", ""))
+                    if poc.get("code"):
+                        st.code(poc["code"])
+                with col2:
+                    if st.button("Delete", key=f"del_poc_{idx}"):
+                        st.session_state.poc_list.pop(idx)
+                        st.success("PoC deleted!")
+                        st.rerun()
 
-            # === IMAGINI ===
-            if poc.get("images"):
-                cols = st.columns(3)
-                for img_idx, img_b64 in enumerate(poc["images"]):
-                    with cols[img_idx % 3]:
-                        if img_b64.startswith("data:image"):
-                            try:
-                                _, b64_data = img_b64.split(",", 1)
-                                img_bytes = base64.b64decode(b64_data)
-                                st.image(img_bytes, use_column_width=True)
-                            except:
-                                st.write("[Corrupted image]")
-
-            if st.button("Delete", key=f"del_poc_{idx}"):
-                st.session_state.poc_list.pop(idx)
-                st.rerun()
+                if poc.get("images"):
+                    cols = st.columns(min(len(poc["images"]), 3))
+                    for i, img_b64 in enumerate(poc["images"]):
+                        with cols[i % 3]:
+                            st.image(img_b64, use_column_width=True)
+    else:
+        st.info("No PoC added yet.")

@@ -1,4 +1,5 @@
 # main.py
+import streamlit as st
 # ================================================================
 # FORȚĂM INIȚIALIZAREA – PRIMUL LUCRU EXECUTAT
 # ================================================================
@@ -20,7 +21,6 @@ if 'severity_ratings' not in st.session_state:
 # IMPORTURI DOAR DUPĂ INIȚIALIZARE
 # ================================================================
 
-import streamlit as st
 from components.general import render as general_tab
 from components.scope import render as scope_tab
 from components.findings import render as findings_tab

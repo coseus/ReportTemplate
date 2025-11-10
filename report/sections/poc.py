@@ -1,5 +1,6 @@
 # report/sections/poc.py
-from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, ParagraphStyle
+from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 import streamlit as st

@@ -75,8 +75,13 @@ class PDFReport:
                 fontWeight='bold'
             ),
         }
+# report/generator.py – DOAR METODA generate() (înlocuiește complet)
     def generate(self, **kwargs):
         try:
+            # === IMPORT STREAMLIT AICI (CRUCIAL!) ===
+            import streamlit as st
+    
+            # === IMPORTURI LENEȘE SECȚIUNI ===
             from .sections.cover import add_cover
             from .sections.toc import add_toc
             from .sections.legal import add_legal
@@ -87,30 +92,46 @@ class PDFReport:
             from .sections.executive import add_executive_summary
             from .sections.findings import add_technical_findings
             from .sections.poc import add_poc
-
+    
+            # === CONSTRUIRE PDF ===
             add_cover(self, **kwargs)
             self.story.append(PageBreak())
+    
             add_toc(self, findings=st.session_state.get("findings", []))
             self.story.append(PageBreak())
+    
             add_legal(self)
             add_contact_section(self)
             self.story.append(PageBreak())
+    
             add_overview(self, overview_text=st.session_state.get("overview", ""))
             add_scope(self, scope_text=st.session_state.get("scope", ""))
             add_severity_ratings(self)
             self.story.append(PageBreak())
-            add_executive_summary(self, findings=st.session_state.get("findings", []), executive_text=st.session_state.get("executive_summary_text", ""))
+    
+            add_executive_summary(
+                self,
+                findings=st.session_state.get("findings", []),
+                executive_text=st.session_state.get("executive_summary_text", "")
+            )
             self.story.append(PageBreak())
+    
             add_technical_findings(self, findings=st.session_state.get("findings", []))
             self.story.append(PageBreak())
+    
             add_poc(self, pocs=st.session_state.get("pocs", []))
-
+    
+            # === FINALIZARE ===
             self.doc.build(self.story)
             self.buffer.seek(0)
             return self.buffer.getvalue()
+    
         except Exception as e:
             import traceback
-            import streamlit as st
-            st.error("PDF generation failed!")
-            st.code(traceback.format_exc())
+            try:
+                import streamlit as st
+                st.error("PDF generation failed!")
+                st.code(traceback.format_exc())
+            except:
+                pass
             return None

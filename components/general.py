@@ -119,43 +119,30 @@ def render():
                     st.rerun()
     else:
         st.info("No contacts yet.")
-    # ========================================
-# === BUTON RESET REAL – FUNCȚIONEAZĂ PE STREAMLIT CLOUD ===
+#========================================
+# === BUTON RESET
 # ========================================
-# ========================================
-# === RESET 100% REAL – TOATE CÂMPURILE DEVIN GOALE ===
-# ========================================
-# components/general.py – ÎNLOCUIEȘTE COMPLET BLOCUL DE RESET CU ASTA:
     st.markdown("---")
     st.subheader("Reset Complete Report")
 
     if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
-        st.session_state["_reset_now"] = True
+        st.session_state["_do_full_reset"] = True
         st.rerun()
 
-    if st.session_state.get("_reset_now", False):
+    if st.session_state.get("_do_full_reset", False):
         st.warning("CONFIRMĂ ȘTERGEREA TUTUROR DATELOR")
 
         col1, col2 = st.columns(2)
         with col1:
             if st.button("DA – ȘTERGE TOTUL", type="primary"):
-                # ȘTERGE TOTUL BRUTAL
+                # ȘTERGE TOTUL
                 st.session_state.clear()
-                
-                # RECREEAZĂ DOAR STRICTUL NECESAR
-                st.session_state.findings = []
-                st.session_state.pocs = []
-                st.session_state.contacts = [
-                    {"name": "Name", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
-                    {"name": "Company", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
-                    {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
-                ]
-
+                # Forțează reload complet
                 st.success("TOATE DATELE AU FOST ȘTERSE!")
                 st.balloons()
                 st.rerun()
 
         with col2:
-            if st.button("NU – Anulează"):
-                del st.session_state["_reset_now"]
+            if st.button("Anulează"):
+                del st.session_state["_do_full_reset"]
                 st.rerun()

@@ -2,24 +2,23 @@
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from pathlib import Path
+import base64
+import io
 
-# Import secțiuni
-from .sections.cover import add_cover
-from .sections.toc import add_toc
-from .sections.legal import add_legal
-from .sections.overview import add_overview
-from .sections.scope import add_scope
-from .sections.severity import add_severity_ratings
-from .sections.executive import add_executive_summary
-from .sections.findings import add_technical_findings
-from .sections.poc import add_poc
+# === FONT ROMÂNESC ===
+font_path = Path(__file__).parent.parent / "assets" / "fonts" / "DejaVuSans.ttf"
+if font_path.exists():
+    pdfmetrics.registerFont(TTFont("DejaVu", str(font_path)))
 
 class PDFReport:
-    def __init__(self):
+    def __init__(self, logo_path=None, watermark=False):
         self.buffer = BytesIO()
         self.doc = SimpleDocTemplate(
             self.buffer,
@@ -29,82 +28,64 @@ class PDFReport:
             leftMargin=0.7*inch,
             rightMargin=0.7*inch
         )
-        self.styles = self._create_styles()
+        self.logo_path = logo_path      # ← ACCEPTĂM logo_path
+        self.watermark = watermark      # ← ACCEPTĂM watermark
         self.story = []
 
-    def _create_styles(self):
+        # === STILURI CU DEJAVU ===
         styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(
-            name='CorporateTitle',
-            fontSize=24,
-            leading=28,
-            alignment=TA_CENTER,
-            textColor=colors.HexColor("#003366")
-        ))
-        styles.add(ParagraphStyle(
-            name='CorporateSubtitle',
-            fontSize=14,
-            leading=18,
-            alignment=TA_CENTER,
-            textColor=colors.HexColor("#555555")
-        ))
-        styles.add(ParagraphStyle(
-            name='Confidential',
-            fontSize=10,
-            textColor=colors.red,
-            alignment=TA_CENTER
-        ))
-        styles.add(ParagraphStyle(
-            'Code',
-            fontName='DejaVu',
-            fontSize=9,
-            leading=12,
-            backColor=colors.HexColor("#0d1117"),
-            textColor=colors.HexColor("#c9d1d9"),
-            leftIndent=15,
-            rightIndent=15,
-            spaceBefore=12,
-            spaceAfter=12,
-            borderPadding=10,
-            borderColor=colors.HexColor("#30363d"),
-            borderWidth=1,
-            borderRadius=6
-        ))
-        return styles
+        self.styles = {
+            'Title': ParagraphStyle('Title', parent=styles['Title'], fontName='DejaVu', fontSize=24, alignment=TA_CENTER, textColor=colors.HexColor("#003366")),
+            'Heading1': ParagraphStyle('Heading1', parent=styles['Heading1'], fontName='DejaVu', fontSize=18),
+            'Heading2': ParagraphStyle('Heading2', parent=styles['Heading2'], fontName='DejaVu', fontSize=14, textColor=colors.HexColor("#2E4057")),
+            'Normal': ParagraphStyle('Normal', parent=styles['Normal'], fontName='DejaVu', fontSize=11, leading=16, alignment=TA_JUSTIFY),
+            'Code': ParagraphStyle('Code', fontName='DejaVu', fontSize=9, leading=12, backColor=colors.HexColor("#0d1117"), textColor=colors.HexColor("#c9d1d9"), leftIndent=15, rightIndent=15, spaceBefore=12, spaceAfter=12, borderPadding=10, borderColor=colors.HexColor("#30363d"), borderWidth=1, borderRadius=6),
+        }
 
-    def generate(self, findings, client, project, pocs=None, 
-                 executive_text=None, tester=None, date=None, 
-                 scope=None, overview_text=None, poc_list=None, **kwargs):
-        
-        # PAGINA 1 – COVER
-        add_cover(self, client=client, project=project, tester=tester, date=date)
-        self.story.append(PageBreak())
-        # PAGINA 2 – TOC
-        add_toc(self, findings=findings, poc_list=poc_list or [])
-        self.story.append(PageBreak())
-        # PAGINA 3 – LEGAL
-        add_legal_and_contact(self, client=client)
+    def add_logo_header(self):
+        if self.logo_path:
+            try:
+                img_data = base64.b64decode(self.logo_path.split(',')[1])
+                img = Image(io.BytesIO(img_data), width=1.5*inch, height=1*inch)
+                img.hAlign = 'LEFT'
+                self.story.append(img)
+                self.story.append(Spacer(1, 0.2*inch))
+            except:
+                pass  # logo invalid → ignoră
 
-        # PAGINA 4 – OVERVIEW + SCOPE + SEVERITY
-        add_assessment_overview(self, overview=overview_text or "No overview provided.")
-        add_scope(self, scope=scope or "No scope defined.")
-        add_severity_ratings(self, **kwargs)
+    def generate(self, **kwargs):
+        # === APELEAZĂ SECȚIUNI ===
+        from .sections.cover import add_cover
+        from .sections.toc import add_toc
+        from .sections.legal import add_legal
+        from .sections.contact import add_contact_section
+        from .sections.overview import add_overview
+        from .sections.scope import add_scope
+        from .sections.severity import add_severity_ratings
+        from .sections.executive import add_executive_summary
+        from .sections.findings import add_technical_findings
+        from .sections.poc import add_poc
 
-        # PAGINA 5 – EXECUTIVE
+        # COVER + LOGO
+        self.add_logo_header()
+        add_cover(self, **kwargs)
         self.story.append(PageBreak())
-        add_executive_summary(self, findings=findings, executive_text=executive_text or "No summary.")
 
-        # PAGINA 6+ – FINDINGS
+        # RESTUL SECȚIUNILOR
+        add_toc(self, findings=st.session_state.get("findings", []))
         self.story.append(PageBreak())
-        add_technical_findings(self, findings=findings)
-
-        # POC
-        # PAGINA 7 – POC INDEPENDENT
+        add_legal(self)
+        add_contact_section(self)
         self.story.append(PageBreak())
-        add_poc(self, poc_list=poc_list)
-        #if pocs:
-         #   self.story.append(PageBreak())
-          #  add_poc(self, pocs=pocs)
+        add_overview(self, overview_text=st.session_state.get("overview", ""))
+        add_scope(self, scope=st.session_state.get("scope", ""))
+        add_severity_ratings(self)
+        self.story.append(PageBreak())
+        add_executive_summary(self, findings=st.session_state.get("findings", []), executive_text=st.session_state.get("executive_summary_text", ""))
+        self.story.append(PageBreak())
+        add_technical_findings(self, findings=st.session_state.get("findings", []))
+        self.story.append(PageBreak())
+        add_poc(self, poc_list=st.session_state.get("pocs", []))
 
         self.doc.build(self.story)
         return self.buffer.getvalue()

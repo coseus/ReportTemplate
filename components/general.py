@@ -129,28 +129,20 @@ def render():
     st.markdown("---")
     st.subheader("Reset Complete Report")
 
-    # PASUL 1: BUTONUL PRINCIPAL
     if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
-        st.session_state["_do_full_reset"] = True
+        st.session_state["_reset_now"] = True
         st.rerun()
 
-    # PASUL 2: CONFIRMARE + ȘTERGERE FORȚATĂ
-    if st.session_state.get("_do_full_reset", False):
-        st.warning("ATENȚIE! Vei pierde TOATE datele din raport.")
+    if st.session_state.get("_reset_now", False):
+        st.warning("CONFIRMĂ ȘTERGEREA TUTUROR DATELOR")
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
-                import os
-
-                # 1. Șterge fișierul JSON
-                if os.path.exists("report_data.json"):
-                    os.remove("report_data.json")
-
-                # 2. ȘTERGE TOATĂ SESSION_STATE (BRUTAL)
+            if st.button("DA – ȘTERGE TOTUL", type="primary"):
+                # ȘTERGE TOTUL BRUTAL
                 st.session_state.clear()
-
-                # 3. REINITIALIZEAZĂ DOAR CE E ABSOLUT NECESAR
+                
+                # RECREEAZĂ DOAR STRICTUL NECESAR
                 st.session_state.findings = []
                 st.session_state.pocs = []
                 st.session_state.contacts = [
@@ -159,13 +151,11 @@ def render():
                     {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
                 ]
 
-                st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
+                st.success("TOATE DATELE AU FOST ȘTERSE!")
                 st.balloons()
-
-                # 4. FORȚEAZĂ RELOAD COMPLET
                 st.rerun()
 
         with col2:
-            if st.button("Anulează", type="secondary", use_container_width=True):
-                del st.session_state["_do_full_reset"]
+            if st.button("NU – Anulează"):
+                del st.session_state["_reset_now"]
                 st.rerun()

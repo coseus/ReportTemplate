@@ -63,6 +63,6 @@ def render():
                     cols = st.columns(3)
                     for j, img in enumerate(poc["images"][:3]):
                         with cols[j]:
-                            st.image(img, use_column_width=True)
+                            st.image(img, use_container_width=True)
                     if len(poc["images"]) > 3:
                         st.caption(f"+ {len(poc['images'])-3} more screenshots")

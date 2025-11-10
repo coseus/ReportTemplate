@@ -97,9 +97,7 @@ class PDFReport:
             add_cover(self, **kwargs)
             self.story.append(PageBreak())
     
-            add_poc(self, pocs=st.session_state.get("pocs", []))
-            self.story.append(PageBreak())
-            
+          
             add_toc(
                 self,
                 findings=st.session_state.get("findings", []),
@@ -126,6 +124,7 @@ class PDFReport:
             self.story.append(PageBreak())
     
             add_poc(self, pocs=st.session_state.get("pocs", []))
+            self.story.append(PageBreak()))
     
             # === FINALIZARE ===
             self.doc.build(self.story)

@@ -124,7 +124,7 @@ class PDFReport:
             self.story.append(PageBreak())
     
             add_poc(self, pocs=st.session_state.get("pocs", []))
-            self.story.append(PageBreak()))
+            self.story.append(PageBreak())
     
             # === FINALIZARE ===
             self.doc.build(self.story)

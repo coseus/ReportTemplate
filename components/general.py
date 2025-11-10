@@ -128,63 +128,57 @@ def render():
     st.markdown("---")
     st.subheader("Reset Complete Report")
 
-    col1, col2 = st.columns([1, 3])
+    # === BUTONUL PRINCIPAL ===
+    if st.button("RESET EVERYTHING", type="secondary", use_container_width=True, key="reset_main_btn"):
+        st.session_state.reset_step = 1
+        st.rerun()
 
-    with col1:
-        if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
-            st.session_state["_temp_reset_confirm"] = True
-            st.rerun()
+    # === PASUL 1: CONFIRMARE ===
+    if st.session_state.get("reset_step") == 1:
+        st.warning("⚠️ ATENȚIE! Vei pierde **TOATE** datele din raport.")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
+                st.session_state.reset_step = 2
+                st.rerun()
+        with col2:
+            if st.button("Anulează", type="secondary", use_container_width=True):
+                del st.session_state.reset_step
+                st.rerun()
 
-        if st.session_state.get("_temp_reset_confirm", False):
-            st.warning("ATENȚIE! Vei pierde TOATE datele din raport.")
+    # === PASUL 2: ȘTERGERE REALĂ (SE EXECUTĂ O SINGURĂ DATĂ) ===
+    if st.session_state.get("reset_step") == 2:
+        import os
 
-            col_ok, col_no = st.columns(2)
-            with col_ok:
-                if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
-                    import os
+        # 1. Șterge fișierul JSON
+        if os.path.exists("report_data.json"):
+            os.remove("report_data.json")
 
-                    # 1. ȘTERGE FIȘIERUL JSON
-                    if os.path.exists("report_data.json"):
-                        os.remove("report_data.json")
+        # 2. LISTĂ COMPLETĂ CU TOATE CHEILE POSIBILE (CHIAR ȘI CELE CU key=)
+        all_possible_keys = [
+            "client", "project", "tester", "date",
+            "client_input", "project_input", "tester_input", "date_input",
+            "overview_text", "overview_text_area",
+            "scope_text", "scope_text_area",
+            "executive_summary_text", "executive_summary_area",
+            "findings", "pocs", "contacts", "logo",
+            "reset_step", "reset_main_btn"
+        ]
 
-                    # 2. LISTĂ COMPLETĂ CU TOATE CHEILE DIN TOATE TAB-URILE
-                    keys_to_kill = [
-                        # General
-                        "client", "project", "tester", "date",
-                        "client_input", "project_input", "tester_input", "date_input",
-                        "overview_text", "overview_text_area",
-                        "scope_text", "scope_text_area",
-                        "executive_summary_text", "executive_summary_area",
-                        # Findings & PoC
-                        "findings", "pocs",
-                        # Contacte
-                        "contacts",
-                        # Logo
-                        "logo",
-                        # Temp
-                        "_temp_reset_confirm"
-                    ]
+        # 3. ȘTERGE ABSOLUT TOATE CHEILE
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
 
-                    # 3. ȘTERGE TOATE CHEILE
-                    for key in keys_to_kill:
-                        st.session_state.pop(key, None)
+        # 4. RECREEAZĂ DOAR CE TREBUIE PENTRU A EVITA CRASH-UL
+        st.session_state.findings = []
+        st.session_state.pocs = []
+        st.session_state.contacts = [
+            {"name": "Name", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
+            {"name": "Company", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
+            {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
+        ]
 
-                    # 4. FORȚEAZĂ REÎNCĂRCARE COMPLETĂ
-                    st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
-                    st.balloons()
-                    st.rerun()
-
-            with col_no:
-                if st.button("Anulează", type="secondary", use_container_width=True):
-                    del st.session_state["_temp_reset_confirm"]
-                    st.rerun()
-
-    with col2:
-        st.info("""
-        RESET EVERYTHING șterge complet:
-        • Client, Project, Tester, Date
-        • Assessment Overview, Scope, Executive Summary
-        • TOATE Findings + PoC-uri + poze
-        • Contacte, Logo
-        • Fișierul report_data.json
-        """)
+        st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
+        st.balloons()
+        st.rerun()

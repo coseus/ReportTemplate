@@ -26,7 +26,7 @@ pdfmetrics.registerFontFamily(
         italic="DejaVu-Italic",
         boldItalic="DejaVu-BoldItalic"
     )
-    BASE_FONT = "DejaVu"
+BASE_FONT = "DejaVu"
 except Exception as e:
     print(f"[FALLBACK] DejaVu fonts failed: {e}")
     BASE_FONT = "Helvetica"

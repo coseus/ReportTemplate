@@ -125,60 +125,47 @@ def render():
 # ========================================
 # === RESET 100% REAL – TOATE CÂMPURILE DEVIN GOALE ===
 # ========================================
+# components/general.py – ÎNLOCUIEȘTE COMPLET BLOCUL DE RESET CU ASTA:
     st.markdown("---")
     st.subheader("Reset Complete Report")
 
-    # === BUTONUL PRINCIPAL ===
-    if st.button("RESET EVERYTHING", type="secondary", use_container_width=True, key="reset_main_btn"):
-        st.session_state.reset_step = 1
+    # PASUL 1: BUTONUL PRINCIPAL
+    if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
+        st.session_state["_do_full_reset"] = True
         st.rerun()
 
-    # === PASUL 1: CONFIRMARE ===
-    if st.session_state.get("reset_step") == 1:
-        st.warning("⚠️ ATENȚIE! Vei pierde **TOATE** datele din raport.")
-        
+    # PASUL 2: CONFIRMARE + ȘTERGERE FORȚATĂ
+    if st.session_state.get("_do_full_reset", False):
+        st.warning("ATENȚIE! Vei pierde TOATE datele din raport.")
+
         col1, col2 = st.columns(2)
         with col1:
             if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
-                st.session_state.reset_step = 2
+                import os
+
+                # 1. Șterge fișierul JSON
+                if os.path.exists("report_data.json"):
+                    os.remove("report_data.json")
+
+                # 2. ȘTERGE TOATĂ SESSION_STATE (BRUTAL)
+                st.session_state.clear()
+
+                # 3. REINITIALIZEAZĂ DOAR CE E ABSOLUT NECESAR
+                st.session_state.findings = []
+                st.session_state.pocs = []
+                st.session_state.contacts = [
+                    {"name": "Name", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
+                    {"name": "Company", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
+                    {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
+                ]
+
+                st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
+                st.balloons()
+
+                # 4. FORȚEAZĂ RELOAD COMPLET
                 st.rerun()
+
         with col2:
             if st.button("Anulează", type="secondary", use_container_width=True):
-                del st.session_state.reset_step
+                del st.session_state["_do_full_reset"]
                 st.rerun()
-
-    # === PASUL 2: ȘTERGERE REALĂ (SE EXECUTĂ O SINGURĂ DATĂ) ===
-    if st.session_state.get("reset_step") == 2:
-        import os
-
-        # 1. Șterge fișierul JSON
-        if os.path.exists("report_data.json"):
-            os.remove("report_data.json")
-
-        # 2. LISTĂ COMPLETĂ CU TOATE CHEILE POSIBILE (CHIAR ȘI CELE CU key=)
-        all_possible_keys = [
-            "client", "project", "tester", "date",
-            "client_input", "project_input", "tester_input", "date_input",
-            "overview_text", "overview_text_area",
-            "scope_text", "scope_text_area",
-            "executive_summary_text", "executive_summary_area",
-            "findings", "pocs", "contacts", "logo",
-            "reset_step", "reset_main_btn"
-        ]
-
-        # 3. ȘTERGE ABSOLUT TOATE CHEILE
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-
-        # 4. RECREEAZĂ DOAR CE TREBUIE PENTRU A EVITA CRASH-UL
-        st.session_state.findings = []
-        st.session_state.pocs = []
-        st.session_state.contacts = [
-            {"name": "Name", "role": "Lead Security Analyst", "email": "security@company.com", "type": "Tester"},
-            {"name": "Company", "role": "Client Representative", "email": "client@company.com", "type": "Client"},
-            {"name": "Support", "role": "Support Team", "email": "support@company.com", "type": "Support"}
-        ]
-
-        st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
-        st.balloons()
-        st.rerun()

@@ -10,6 +10,7 @@ def render():
 
     st.subheader("Proof of Concept")
 
+    # === ADD NEW POC ===
     with st.expander("Add New PoC", expanded=True):
         title = st.text_input("Title", value="Untitled PoC", key="poc_title")
         desc = st.text_area("Description", height=100, key="poc_desc")
@@ -35,32 +36,34 @@ def render():
             st.success(f"PoC added! (ID: {poc_id})")
             st.rerun()
 
+    # === LISTĂ POC – FĂRĂ `return`! ===
     st.markdown("### Current PoCs")
+
     if not st.session_state.pocs:
-        st.info("No PoC added yet.")
-        return
+        st.info("No PoC added yet. Use the form above to create one.")
+        # NU MAI FACEM return → lăsăm să continue
+    else:
+        for i in range(len(st.session_state.pocs)-1, -1, -1):
+            poc = st.session_state.pocs[i]
+            poc_id = poc.get("id", f"temp_{i}")
 
-    for i in range(len(st.session_state.pocs)-1, -1, -1):
-        poc = st.session_state.pocs[i]
-        poc_id = poc.get("id", f"temp_{i}")
+            with st.expander(f"**{poc.get('title','Untitled PoC')}** (ID: {poc_id})"):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    if poc.get("description"):
+                        st.write(poc["description"])
+                    if poc.get("code"):
+                        st.code(poc["code"], language="bash")
+                with col2:
+                    if st.button("Delete", key=f"del_{poc_id}"):
+                        st.session_state.pocs.pop(i)
+                        st.success("Deleted!")
+                        st.rerun()
 
-        with st.expander(f"**{poc.get('title','Untitled PoC')}** (ID: {poc_id})"):
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                if poc.get("description"):
-                    st.write(poc["description"])
-                if poc.get("code"):
-                    st.code(poc["code"], language="bash")
-            with col2:
-                if st.button("Delete", key=f"del_{poc_id}"):
-                    st.session_state.pocs.pop(i)
-                    st.success("Deleted!")
-                    st.rerun()
-
-            if poc.get("images"):
-                cols = st.columns(3)
-                for j, img in enumerate(poc["images"][:3]):
-                    with cols[j]:
-                        st.image(img, use_column_width=True)
-                if len(poc["images"]) > 3:
-                    st.caption(f"+ {len(poc['images'])-3} more")
+                if poc.get("images"):
+                    cols = st.columns(3)
+                    for j, img in enumerate(poc["images"][:3]):
+                        with cols[j]:
+                            st.image(img, use_column_width=True)
+                    if len(poc["images"]) > 3:
+                        st.caption(f"+ {len(poc['images'])-3} more screenshots")

@@ -1,7 +1,8 @@
 # report/sections/poc.py
-from reportlab.platypus import Paragraph, Spacer, PageBreak, Image  # ← Image importat!
+from reportlab.platypus import Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
+from reportlab.lib import colors
 import base64
 import io
 
@@ -11,7 +12,7 @@ def add_poc(pdf, pocs=None):
         return
 
     pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
-    pdf.story.append(Spacer(1, 0.6*inch))  # mai mult spațiu
+    pdf.story.append(Spacer(1, 0.6*inch))
 
     for idx, poc in enumerate(pocs, 1):
         title = poc.get("title", "Untitled PoC")
@@ -27,26 +28,39 @@ def add_poc(pdf, pocs=None):
             pdf.story.append(Paragraph(f"<font name='Courier'>{code_text}</font>", pdf.styles['Code']))
             pdf.story.append(Spacer(1, 0.5*inch))
 
+        # === POZE ÎN TABEL – FIXAT 100% ===
         if poc.get("images"):
-            cols = []
-            for img_b64 in poc["images"][:4]:  # max 4 poze
+            image_flowables = []
+            for img_b64 in poc["images"][:6]:  # max 6 poze
                 try:
                     img_data = base64.b64decode(img_b64.split(',', 1)[1])
-                    img = Image(io.BytesIO(img_data), width=3*inch, height=2*inch)  # ← Image acum funcționează
-                    cols.append(img)
-                except:
-                    cols.append(Paragraph("[Image failed]", pdf.styles['Normal']))
-            if cols:
-                from reportlab.platypus import Table, TableStyle
-                table = Table([[c] for c in cols], colWidths=6.5*inch)
+                    img_stream = io.BytesIO(img_data)
+                    # CREĂM Image CU BytesIO → NU mai dăm ImageReader
+                    img = Image(img_stream, width=3*inch, height=2*inch)
+                    img.hAlign = 'CENTER'
+                    image_flowables.append(img)
+                except Exception as e:
+                    image_flowables.append(Paragraph(f"[Image error: {e}]", pdf.styles['Normal']))
+
+            if image_flowables:
+                # Tabel cu 2 coloane
+                rows = []
+                for i in range(0, len(image_flowables), 2):
+                    row = image_flowables[i:i+2]
+                    if len(row) == 1:
+                        row.append(Spacer(1, 2*inch))  # gol dacă e impar
+                    rows.append(row)
+
+                table = Table(rows, colWidths=[3.2*inch, 3.2*inch])
                 table.setStyle(TableStyle([
                     ('ALIGN', (0,0), (-1,-1), 'CENTER'),
                     ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                     ('LEFTPADDING', (0,0), (-1,-1), 10),
                     ('RIGHTPADDING', (0,0), (-1,-1), 10),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 15),
+                    ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#f8f9fa")),
                 ]))
                 pdf.story.append(table)
-                pdf.story.append(Spacer(1, 0.4*inch))
+                pdf.story.append(Spacer(1, 0.5*inch))
         
         pdf.story.append(PageBreak())

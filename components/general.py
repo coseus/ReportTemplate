@@ -122,43 +122,53 @@ def render():
     # ========================================
 # === BUTON RESET REAL – FUNCȚIONEAZĂ PE STREAMLIT CLOUD ===
 # ========================================
+# ========================================
+# === BUTON RESET CU CONFIRMARE CARE APARE ÎNTOTDEAUNA ===
+# ========================================
     st.markdown("---")
-    st.subheader("🗑️ Reset Complete Report")
+    st.subheader("Reset Complete Report")
 
     col1, col2 = st.columns([1, 3])
 
     with col1:
+        # PASUL 1: BUTONUL PRINCIPAL
         if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
-            # PASUL 1: CONFIRMARE
-            if st.session_state.get("reset_confirm", False):
-                # PASUL 2: ȘTERGERE REALĂ
-                # 1. Șterge fișierul JSON (forțat)
-                import os
-                json_path = "report_data.json"
-                if os.path.exists(json_path):
-                    os.remove(json_path)
+            # Folosim o cheie TEMPORARĂ care NU se șterge la rerun
+            st.session_state["_temp_reset_confirm"] = True
+            st.rerun()
 
-                # 2. Șterge session_state complet
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
+        # PASUL 2: CONFIRMAREA – apare doar dacă am apăsat butonul
+        if st.session_state.get("_temp_reset_confirm", False):
+            st.warning("ATENȚIE! Vei pierde TOATE datele din raport.")
+            
+            col_confirm, col_cancel = st.columns(2)
+            with col_confirm:
+                if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
+                    # === ȘTERGERE REALĂ ===
+                    import os
+                    # 1. Șterge fișierul JSON
+                    if os.path.exists("report_data.json"):
+                        os.remove("report_data.json")
+                    
+                    # 2. Șterge TOATE cheile din session_state
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
+                    
+                    st.success("TOATE DATELE AU FOST ȘTERSE!")
+                    st.balloons()
+                    st.rerun()
 
-                # 3. Forțează reload complet
-                st.success("TOATE DATELE AU FOST ȘTERSE!")
-                st.balloons()
-                st.rerun()
-
-            else:
-                st.session_state.reset_confirm = True
-                st.warning("⚠️ Atenție! Vei pierde TOATE datele. Apasă din nou pentru a confirma.")
-                if st.button("Anulează", type="secondary"):
-                    st.session_state.reset_confirm = False
+            with col_cancel:
+                if st.button("Anulează", type="secondary", use_container_width=True):
+                    del st.session_state["_temp_reset_confirm"]
                     st.rerun()
 
     with col2:
         st.info("""
-        **RESET EVERYTHING** șterge complet:
-        • Toate Findings + PoC-uri
-        • Client, Project, Tester
-        • Logo, Contacte, Overview
+        RESET EVERYTHING șterge complet:
+        • Toate Findings + PoC-uri + poze
+        • Client, Project, Tester, Date
+        • Overview, Scope, Executive Summary
+        • Contacte, Logo
         • Fișierul report_data.json
         """)

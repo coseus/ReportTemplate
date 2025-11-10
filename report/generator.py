@@ -54,7 +54,7 @@ class PDFReport:
             textColor=colors.red,
             alignment=TA_CENTER
         ))
-        'Code': ParagraphStyle(
+        styles.add(ParagraphStyle(
             'Code',
             fontName='DejaVu',
             fontSize=9,

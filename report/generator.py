@@ -97,8 +97,14 @@ class PDFReport:
             add_cover(self, **kwargs)
             self.story.append(PageBreak())
     
-            add_toc(self, findings=st.session_state.get("findings", []))
+            add_poc(self, pocs=st.session_state.get("pocs", []))
             self.story.append(PageBreak())
+            
+            add_toc(
+                self,
+                findings=st.session_state.get("findings", []),
+                pocs=st.session_state.get("pocs", [])
+            )
     
             add_legal(self)
             add_contact_section(self)

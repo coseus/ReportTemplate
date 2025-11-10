@@ -19,43 +19,45 @@ def add_toc(pdf, findings=None, pocs=None, **kwargs):
     pdf.story.append(Paragraph("Table of Contents", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.5 * inch))
 
-    data = [["Page", "Section"]]
+    data = []
+
+    # === ANTET ===
+    data.append([Paragraph("Page", pdf.styles['Normal']), Paragraph("Section", pdf.styles['Normal'])])
 
     # === SECȚIUNI FIXE ===
     fixed = [
-        ("1", "Cover Page"),
-        ("2", "Table of Contents"),
-        ("3", "Legal Disclaimer & Contact"),
-        ("4", "Assessment Overview"),
-        ("4", "Scope of Testing"),
-        ("4", "Severity Ratings"),
-        ("5", "Executive Summary"),
-        ("6", "Technical Findings"),
-        ("7", "Steps to Reproduce (PoC)"),
+        "1 Cover Page",
+        "2 Table of Contents",
+        "3 Legal Disclaimer & Contact",
+        "4 Assessment Overview",
+        "4 Scope of Testing",
+        "4 Severity Ratings",
+        "5 Executive Summary",
+        "6 Technical Findings",
+        "7 Steps to Reproduce (PoC)"
     ]
-    for page, sec in fixed:
-        data.append([page, Paragraph(sec, pdf.styles['Normal'])])
+    for sec in fixed:
+        page, text = sec.split(" ", 1)
+        data.append([Paragraph(page, pdf.styles['Normal']), Paragraph(text, pdf.styles['Normal'])])
 
-    # === 6.1, 6.2... FINDINGS (INDENTATE) ===
+    # === 6.1, 6.2... FINDINGS ===
     order = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3, "Informational": 4}
     sorted_findings = sorted(findings, key=lambda f: order.get(f.get("severity", ""), 5))
     
     for i, f in enumerate(sorted_findings, 1):
         fid = f.get("id", "VULN")
-        title = f.get("title", "Untitled Finding")
-        short = title if len(title) <= 52 else title[:49] + "..."
+        title = f.get("title", "Untitled")
+        short = title if len(title) <= 55 else title[:52] + "..."
         colored = f"<font color='{severity_color(f.get('severity'))}'>{fid}</font> - {short}"
-        indented = Paragraph(f"  6.{i} {colored}", pdf.styles['Normal'])
-        data.append(["", indented])
+        data.append(["", Paragraph(f"  6.{i} {colored}", pdf.styles['Normal'])])
 
-    # === 7.1, 7.2... POC (INDENTATE ȘI VIZIBILE 100%) ===
+    # === 7.1, 7.2... POC – ACUM APARE 100% ===
     for i, poc in enumerate(pocs, 1):
         title = poc.get("title", f"PoC {i}")
-        short = title if len(title) <= 55 else title[:52] + "..."
-        indented = Paragraph(f"  7.{i} {short}", pdf.styles['Normal'])
-        data.append(["", indented])
+        short = title if len(title) <= 60 else title[:57] + "..."
+        data.append(["", Paragraph(f"  7.{i} {short}", pdf.styles['Normal'])])
 
-    # === TABEL TOC ===
+    # === TABEL FINAL ===
     table = Table(data, colWidths=[0.9*inch, 5.5*inch])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#003366")),

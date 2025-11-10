@@ -30,7 +30,9 @@ def add_technical_findings(pdf, findings=None, **kwargs):
             pdf.styles['Heading2']
         ))
         pdf.story.append(Paragraph(f"<b>Host:</b> {f.get('host', 'N/A')}", pdf.styles['Normal']))
+        pdf.story.append(Spacer(1, 0.4 * inch))
         pdf.story.append(Paragraph(f"<b>CVSS:</b> {f.get('cvss', 'N/A')}", pdf.styles['Normal']))
+        pdf.story.append(Spacer(1, 0.4 * inch))
 
         # === SEVERITATE CU CULOARE ===
         sev = f.get('severity', 'Unknown')

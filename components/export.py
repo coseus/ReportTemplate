@@ -34,23 +34,33 @@ def render():
             st.success("Project saved!")
 
     # === ÎNCĂRCARE PROIECT ===
+# === ÎNCĂRCARE PROIECT (IMPORT JSON COMPLET) ===
     with col2:
         uploaded = st.file_uploader("Load Project (.json)", type="json")
-        if uploaded and st.button("Import Project"):
-            try:
-                data = json.load(uploaded)
-                for key in ["client", "project", "tester", "date", "scope", 
-                           "executive_summary_text", "overview_text", "contacts"]:
-                    if key in data:
-                        st.session_state[key] = data[key]
-                st.session_state.findings = data.get("findings", [])
-                st.session_state.poc_list = data.get("poc_list", [])
-                st.success("Project loaded!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Import error: {e}")
-
-    st.divider()
+        if uploaded:
+            if st.button("Import Project", type="primary"):
+                try:
+                    data = json.load(uploaded)
+    
+                    # 1. Șterge datele vechi (evităm suprapuneri)
+                    keys_to_clear = [
+                        "client", "project", "tester", "date",
+                        "overview_text", "scope_text", "executive_summary_text",
+                        "findings", "pocs", "contacts", "logo"
+                    ]
+                    for k in keys_to_clear:
+                        st.session_state.pop(k, None)
+    
+                    # 2. Încarcă TOATE datele din JSON
+                    for key, value in data.items():
+                        st.session_state[key] = value
+    
+                    st.success("Proiect încărcat cu succes! Toate datele au fost restaurate.")
+                    st.balloons()
+                    st.rerun()
+    
+                except Exception as e:
+                    st.error(f"Eroare la import: {e}")
 
     # === GENERARE PDF ===
     if st.button("Generate PDF", type="primary"):

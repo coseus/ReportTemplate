@@ -126,23 +126,31 @@ def render():
     st.subheader("Reset Complete Report")
 
     if st.button("RESET EVERYTHING", type="secondary", use_container_width=True):
-        st.session_state["_do_full_reset"] = True
+        st.session_state["performing_reset"] = True
         st.rerun()
 
-    if st.session_state.get("_do_full_reset", False):
-        st.warning("CONFIRMĂ ȘTERGEREA TUTUROR DATELOR")
+    if st.session_state.get("performing_reset", False):
+        st.warning("⚠️ CONFIRMĂ ȘTERGEREA COMPLETĂ A TUTUROR DATELOR")
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("DA – ȘTERGE TOTUL", type="primary"):
-                # ȘTERGE TOTUL
+            if st.button("DA – ȘTERGE TOTUL", type="primary", use_container_width=True):
+                # 1. Șterge fișierul
+                import os
+                if os.path.exists("report_data.json"):
+                    os.remove("report_data.json")
+
+                # 2. ȘTERGE COMPLET session_state
                 st.session_state.clear()
-                # Forțează reload complet
+
+                # 3. MARCĂM CĂ AM TERMINAT RESETUL
+                st.session_state["performing_reset"] = False
+
                 st.success("TOATE DATELE AU FOST ȘTERSE!")
                 st.balloons()
                 st.rerun()
 
         with col2:
-            if st.button("Anulează"):
-                del st.session_state["_do_full_reset"]
+            if st.button("Anulează", type="secondary", use_container_width=True):
+                st.session_state["performing_reset"] = False
                 st.rerun()

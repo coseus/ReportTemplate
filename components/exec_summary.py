@@ -2,9 +2,10 @@
 import streamlit as st
 import plotly.graph_objects as go
 from reportlab.lib.units import inch
-
+from report.sections.executive import render_ui
 
 def render():
+    render_ui()
     st.subheader("Executive Summary")
     
     text = st.text_area(

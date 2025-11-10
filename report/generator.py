@@ -54,6 +54,22 @@ class PDFReport:
             textColor=colors.red,
             alignment=TA_CENTER
         ))
+        'Code': ParagraphStyle(
+            'Code',
+            fontName='DejaVu',
+            fontSize=9,
+            leading=12,
+            backColor=colors.HexColor("#0d1117"),
+            textColor=colors.HexColor("#c9d1d9"),
+            leftIndent=15,
+            rightIndent=15,
+            spaceBefore=12,
+            spaceAfter=12,
+            borderPadding=10,
+            borderColor=colors.HexColor("#30363d"),
+            borderWidth=1,
+            borderRadius=6
+        )
         return styles
 
     def generate(self, findings, client, project, pocs=None, 

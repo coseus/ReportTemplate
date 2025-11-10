@@ -4,14 +4,14 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 import streamlit as st
 
-def add_poc(pdf, poc_list):
+def add_poc(pdf, pocs):
     if not poc_list:
         return
 
     pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.4*inch))
 
-    for idx, poc in enumerate(poc_list, 1):
+    for idx, poc in enumerate(pocs, 1):
         title = poc.get("title", f"PoC {idx+1}")
         code = poc.get("code", "")
         images = poc.get("images", [])

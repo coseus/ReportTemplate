@@ -33,7 +33,7 @@ if 'severity_ratings' not in st.session_state:
     st.session_state.severity_ratings = ""
 
 # Taburi
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "General Info", "Scope", "Findings", "Executive Summary", 
     "PoC", "Export"
 ])

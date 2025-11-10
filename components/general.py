@@ -119,3 +119,49 @@ def render():
                     st.rerun()
     else:
         st.info("No contacts yet.")
+    # ========================================
+# === BUTON RESET ALL DATA (ADAUGĂ LA FINALUL FIȘIERULUI) ===
+# ========================================
+    st.markdown("---")
+    st.subheader("🗑️ Reset All Data")
+
+    col_btn, col_info = st.columns([1, 3])
+
+    with col_btn:
+        if st.button("RESET EVERYTHING", type="secondary", use_container_width=True, help="Șterge TOATE datele din raport"):
+            if st.session_state.get("confirm_reset", False):
+                # --- CONFIRMARE FINALĂ ---
+                if st.button("CONFIRMĂ ȘTERGEREA TUTUROR DATELOR", type="primary", use_container_width=True):
+                    # 1. Șterge session_state
+                    keys_to_remove = [k for k in st.session_state.keys() if k != "confirm_reset"]
+                    for k in keys_to_remove:
+                        del st.session_state[k]
+
+                    # 2. Șterge fișierul JSON dacă există
+                    import os
+                    json_path = "report_data.json"
+                    if os.path.exists(json_path):
+                        os.remove(json_path)
+
+                    st.success("TOATE DATELE AU FOST ȘTERSE!")
+                    st.balloons()
+                    st.rerun()
+            else:
+                st.session_state.confirm_reset = True
+                st.warning("⚠️ EȘTI SIGUR? Această acțiune **NU POATE FI ANULATĂ**.")
+                if st.button("Anulează", type="secondary"):
+                    st.session_state.confirm_reset = False
+                    st.rerun()
+
+    with col_info:
+        st.info("""
+        **Ce șterge butonul RESET:**
+        - Client, Project, Tester, Date
+        - Assessment Overview
+        - Scope, Executive Summary
+        - Toate Findings
+        - Toate PoC-uri (inclusiv poze)
+        - Contacte personalizate
+        - Logo încărcat
+        - Fișierul `report_data.json`
+        """)

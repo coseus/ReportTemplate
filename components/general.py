@@ -120,48 +120,56 @@ def render():
     else:
         st.info("No contacts yet.")
     # ========================================
-# === BUTON RESET ALL DATA (ADAUGĂ LA FINALUL FIȘIERULUI) ===
+# === BUTON DELETE ALL – ȘTERGE TOATE DATELE DIN TOATE TAB-URILE ===
 # ========================================
     st.markdown("---")
-    st.subheader("🗑️ Reset All Data")
+    st.subheader("🗑️ Delete All Data")
 
-    col_btn, col_info = st.columns([1, 3])
+    col_del, col_spacer = st.columns([1, 3])
 
-    with col_btn:
-        if st.button("RESET EVERYTHING", type="secondary", use_container_width=True, help="Șterge TOATE datele din raport"):
-            if st.session_state.get("confirm_reset", False):
+    with col_del:
+        if st.button("DELETE ALL DATA", type="secondary", use_container_width=True):
+            if st.session_state.get("confirm_delete_all", False):
                 # --- CONFIRMARE FINALĂ ---
-                if st.button("CONFIRMĂ ȘTERGEREA TUTUROR DATELOR", type="primary", use_container_width=True):
-                    # 1. Șterge session_state
-                    keys_to_remove = [k for k in st.session_state.keys() if k != "confirm_reset"]
-                    for k in keys_to_remove:
-                        del st.session_state[k]
+                if st.button("CONFIRMĂ ȘTERGEREA COMPLETĂ", type="primary", use_container_width=True):
+                    # LISTA COMPLETĂ A TUTUROR CHEILOR DE ȘTERS
+                    keys_to_clear = [
+                        "client", "project", "tester", "date",
+                        "overview_text", "scope_text", "executive_summary_text",
+                        "findings", "pocs", "contacts",
+                        "logo", "watermark",
+                        "client_input", "project_input", "tester_input", "date_input",
+                        "overview_text_area"
+                    ]
+                    # Șterge din session_state
+                    for key in keys_to_clear:
+                        if key in st.session_state:
+                            del st.session_state[key]
 
-                    # 2. Șterge fișierul JSON dacă există
+                    # Șterge fișierul JSON dacă există
                     import os
-                    json_path = "report_data.json"
-                    if os.path.exists(json_path):
-                        os.remove(json_path)
+                    if os.path.exists("report_data.json"):
+                        os.remove("report_data.json")
 
-                    st.success("TOATE DATELE AU FOST ȘTERSE!")
+                    st.success("TOATE DATELE AU FOST ȘTERSE COMPLET!")
                     st.balloons()
                     st.rerun()
+
             else:
-                st.session_state.confirm_reset = True
-                st.warning("⚠️ EȘTI SIGUR? Această acțiune **NU POATE FI ANULATĂ**.")
+                st.session_state.confirm_delete_all = True
+                st.warning("⚠️ ATENȚIE! Aceasta va șterge **TOATE** datele din raport (Findings, PoC, Contacte, Logo, etc.)")
                 if st.button("Anulează", type="secondary"):
-                    st.session_state.confirm_reset = False
+                    st.session_state.confirm_delete_all = False
                     st.rerun()
 
-    with col_info:
+    with col_spacer:
         st.info("""
-        **Ce șterge butonul RESET:**
+        **DELETE ALL DATA** șterge instant:
         - Client, Project, Tester, Date
-        - Assessment Overview
-        - Scope, Executive Summary
-        - Toate Findings
-        - Toate PoC-uri (inclusiv poze)
-        - Contacte personalizate
-        - Logo încărcat
+        - Assessment Overview, Scope, Executive Summary
+        - **TOATE Findings**
+        - **TOATE PoC-urile (inclusiv poze)**
+        - Toate Contactele
+        - Logo-ul încărcat
         - Fișierul `report_data.json`
         """)

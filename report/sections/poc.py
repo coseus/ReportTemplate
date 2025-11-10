@@ -11,7 +11,7 @@ def add_poc(pdf, poc_list):
     pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.4*inch))
 
-    for idx, poc in enumerate(poc_list):
+    for poc in poc_list:
         title = poc.get("title", f"PoC {idx+1}")
         code = poc.get("code", "")
         images = poc.get("images", [])

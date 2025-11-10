@@ -93,7 +93,7 @@ class PDFReport:
         self.story.append(PageBreak())
         add_technical_findings(self, findings=st.session_state.get("findings", []))
         self.story.append(PageBreak())
-        add_poc(self, poc_list=st.session_state.get("pocs", []))
+        add_poc(self, pocs=st.session_state.get("pocs", []))
 
         self.doc.build(self.story)
         return self.buffer.getvalue()

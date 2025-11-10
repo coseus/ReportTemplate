@@ -8,7 +8,7 @@ def add_poc(pdf, pocs):
     if not pocs:
         return
 
-    pdf.story.append(Paragraph("Proof of Concept", pdf.styles['Heading1']))
+    pdf.story.append(Paragraph("Steps to Reproduce", pdf.styles['Heading1']))
     pdf.story.append(Spacer(1, 0.4*inch))
 
     for idx, poc in enumerate(pocs, 1):
@@ -22,30 +22,16 @@ def add_poc(pdf, pocs):
 
         # === CODE BLOCK – TERMINAL STYLE (EXACT CA FINDINGS) ===
         if code:
-            pdf.story.append(Paragraph("Terminal", ParagraphStyle(
-                'Label', fontName='DejaVu-Bold', fontSize=11, textColor=colors.HexColor("#2E4057")
-            )))
-            pdf.story.append(Spacer(1, 0.1*inch))
-
-            # Fundal negru + text verde + bordură + colțuri rotunjite
-            code_html = f"""
-            <font name="DejaVu" size=9 color="#c9d1d9">
-            {code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')}
-            </font>
-            """
-            code_para = Paragraph(code_html, pdf.styles['Code'])
-            code_table = Table([[code_para]], colWidths=6.5*inch)
-            code_table.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#0d1117")),
-                ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#30363d")),
-                ('ROUNDEDCORNERS', (0,0), (-1,-1), 6),
-                ('LEFTPADDING', (0,0), (-1,-1), 15),
-                ('RIGHTPADDING', (0,0), (-1,-1), 15),
-                ('TOPPADDING', (0,0), (-1,-1), 12),
-                ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-            ]))
-            pdf.story.append(code_table)
-            pdf.story.append(Spacer(1, 0.3*inch))
+            terminal_style = ParagraphStyle(
+                            name='Terminal',
+                            parent=pdf.styles['Code'],
+                            fontName='Courier',
+                            fontSize=9,
+                            leading=12
+                        )
+                        code_text = poc["code"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                        pdf.story.append(Paragraph(f"<font name='Courier'>{code_text}</font>", terminal_style))
+                        pdf.story.append(Spacer(1, 0.4*inch))
 
         # === IMAGINI POC ===
         if images:

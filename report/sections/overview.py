@@ -13,7 +13,7 @@ def add_overview(pdf, **kwargs):
     paragraphs = [p.strip() for p in overview_text.split("\n") if p.strip()]
     for para in paragraphs:
         pdf.story.append(Paragraph(para, pdf.styles['Normal']))
-        pdf.story.append(Spacer(1, 0.4 * inch))
+        #pdf.story.append(Spacer(1, 0.4 * inch))
     #pdf.story.append(Paragraph(overview_text, pdf.styles['Normal']))
     #pdf.story.append(Paragraph("<br/>", pdf.styles['Normal']))
 

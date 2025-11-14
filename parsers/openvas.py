@@ -1,34 +1,27 @@
 # parsers/openvas.py
 import xml.etree.ElementTree as ET
-from datetime import datetime
 
 def parse_openvas(xml_file):
     """
-    Parsează fișierul OpenVAS .xml și returnează o listă de findings
-    Compatibil cu OpenVAS 21+, GVM 22+
+    Parsează OpenVAS/GVM .xml
+    SEVERITY MAPATĂ EXACT CA LA NESSUS/NMAP
     """
+    findings = []
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
-        
-        findings = []
-        report = root.find('.//report')
-        if not report:
-            return findings  # raport gol
 
-        # Informații generale
-        host_list = []
-        for host_elem in report.findall('.//host'):
-            ip = host_elem.text.strip() if host_elem.text else "Unknown"
-            host_list.append(ip)
+        # Găsește toate rezultatele (suportă ambele formate)
+        results = root.findall('.//result') or root.findall('.//results/result')
+        if not results:
+            return findings  # fișier gol
 
-        # Vulnerabilități
-        for result in report.findall('.//result'):
-            vuln = {
+        for result in results:
+            finding = {
                 "id": f"VULN-{len(findings)+1:03d}",
-                "title": "OpenVAS Finding",
-                "host": "Multiple",
-                "severity": "Informational",
+                "title": result.find('name').text.strip() if result.find('name') is not None else "Unknown",
+                "host": result.find('host').text.strip() if result.find('host') is not None else "Unknown",
+                "severity": "Informational",  # default
                 "description": "",
                 "impact": "",
                 "recommendation": "",
@@ -36,72 +29,44 @@ def parse_openvas(xml_file):
                 "cvss": 0.0
             }
 
-            # Nume vulnerabilitate
-            name_elem = result.find('name')
-            if name_elem is not None and name_elem.text:
-                vuln["title"] = name_elem.text.strip()[:100]
-
-            # Host
-            host_elem = result.find('host')
-            if host_elem is not None and host_elem.text:
-                vuln["host"] = host_elem.text.strip()
-
-            # Severitate (NVT → threat)
-            threat_elem = result.find('.//threat')
-            if threat_elem is not None and threat_elem.text:
-                threat = threat_elem.text.strip().lower()
-                if "high" in threat:
-                    vuln["severity"] = "High"
-                elif "medium" in threat:
-                    vuln["severity"] = "Moderate"
-                elif "low" in threat:
-                    vuln["severity"] = "Low"
-
-            # CVSS
-            cvss_elem = result.find('.//nvt/cvss_base')
-            if cvss_elem is not None and cvss_elem.text:
+            # === SEVERITY FIXATĂ CA LA NESSUS/NMAP ===
+            severity_elem = result.find('.//severity')
+            if severity_elem is not None and severity_elem.text:
                 try:
-                    vuln["cvss"] = float(cvss_elem.text)
-                    if vuln["cvss"] >= 9.0:
-                        vuln["severity"] = "Critical"
-                    elif vuln["cvss"] >= 7.0:
-                        vuln["severity"] = "High"
-                    elif vuln["cvss"] >= 4.0:
-                        vuln["severity"] = "Moderate"
-                    elif vuln["cvss"] >= 0.1:
-                        vuln["severity"] = "Low"
+                    cvss = float(severity_elem.text.strip())
+                    finding["cvss"] = cvss
+                    if cvss >= 9.0:
+                        finding["severity"] = "Critical"
+                    elif cvss >= 7.0:
+                        finding["severity"] = "High"
+                    elif cvss >= 4.0:
+                        finding["severity"] = "Moderate"
+                    elif cvss > 0.0:
+                        finding["severity"] = "Low"
                 except:
                     pass
 
             # Descriere
-            desc_elem = result.find('description')
-            if desc_elem is not None and desc_elem.text:
-                vuln["description"] = desc_elem.text.strip()
-
-            # Impact
-            impact_elem = result.find('.//nvt/impact')
-            if impact_elem is not None and impact_elem.text:
-                vuln["impact"] = impact_elem.text.strip()
+            desc = result.find('description')
+            if desc is not None and desc.text:
+                finding["description"] = desc.text.strip()
 
             # Recomandare
-            solution_elem = result.find('.//nvt/solution')
-            if solution_elem is not None and solution_elem.text:
-                vuln["recommendation"] = solution_elem.text.strip()
+            solution = result.find('.//solution')
+            if solution is not None and solution.text:
+                finding["recommendation"] = solution.text.strip()
 
-            # Referințe (CVE, BID, etc.)
-            refs = []
-            for ref in result.findall('.//nvt/ref'):
+            # Referințe
+            for ref in result.findall('.//ref'):
                 ref_type = ref.get('type', '').upper()
                 ref_id = ref.get('id', '')
                 if ref_type and ref_id:
-                    refs.append(f"{ref_type}: {ref_id}")
-            if refs:
-                vuln["references"] = refs
+                    finding["references"].append(f"{ref_type}: {ref_id}")
 
-            findings.append(vuln)
+            findings.append(finding)
 
         return findings
 
     except Exception as e:
-        print(f"[OpenVAS Parser] Eroare: {e}")
+        print(f"[OpenVAS] Eroare parsare: {e}")
         return []

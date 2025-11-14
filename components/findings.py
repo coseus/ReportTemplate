@@ -7,6 +7,10 @@ from collections import Counter
 def render():
     st.subheader("Technical Findings")
 
+    # === INIȚIALIZARE FINDINGS ===
+    if "findings" not in st.session_state:
+        st.session_state.findings = []
+
     # === CONTOR LIVE ===
     total = len(st.session_state.findings)
     sev_count = Counter(f.get("severity", "Unknown") for f in st.session_state.findings)
@@ -20,7 +24,7 @@ def render():
     )
 
     # === TABURI ===
-    tab1, tab2 = st.tabs(["Add / Edit Manual", "Import Nessus / Nmap"])
+    tab1, tab2 = st.tabs(["Add / Edit Manual", "Import Nessus / Nmap / OpenVAS / Burp"])
 
     # ===================================================================
     # TAB 1: ADD MANUAL + EDIT + DELETE
@@ -50,7 +54,11 @@ def render():
                 accept_multiple_files=True,
                 key="add_images"
             )
-            images_b64 = [f"data:{img.type};base64,{base64.b64encode(img.read()).decode()}" for img in uploaded_images]
+            images_b64 = []
+            for img in uploaded_images:
+                img_bytes = img.read()
+                b64 = base64.b64encode(img_bytes).decode()
+                images_b64.append(f"data:{img.type};base64,{b64}")
 
             if st.button("Add Finding", type="primary"):
                 st.session_state.findings.append({
@@ -69,104 +77,63 @@ def render():
 
         # === LISTĂ FINDINGS ===
         if st.session_state.findings:
+            st.markdown("### Current Findings")
             for i, f in enumerate(st.session_state.findings):
-                with st.expander(f"**{f.get('id')}** - {f.get('title')} | {f.get('host')} | {f.get('severity')}"):
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        with st.form(key=f"edit_form_{i}"):
-                            e_id = st.text_input("ID", f.get("id"), key=f"e_id_{i}")
-                            e_title = st.text_input("Title", f.get("title"), key=f"e_title_{i}")
-                            e_host = st.text_input("Host", f.get("host"), key=f"e_host_{i}")
-                            e_sev = st.selectbox("Severity", ["Critical", "High", "Moderate", "Low", "Informational"],
-                                                index=["Critical", "High", "Moderate", "Low", "Informational"].index(f.get("severity", "Moderate")),
-                                                key=f"e_sev_{i}")
-                            e_cvss = st.number_input("CVSS", 0.0, 10.0, float(f.get("cvss", 0)), 0.1, key=f"e_cvss_{i}")
-                            e_desc = st.text_area("Description", f.get("description", ""), height=100, key=f"e_desc_{i}")
-                            e_rem = st.text_area("Remediation", f.get("remediation", ""), height=100, key=f"e_rem_{i}")
-                            e_code = st.text_area("Code", f.get("code", ""), height=120, key=f"e_code_{i}")
-
-                            uploaded_edit = st.file_uploader("Replace images", type=["png","jpg","jpeg"], accept_multiple_files=True, key=f"edit_imgs_{i}")
-                            new_images = [f"data:{img.type};base64,{base64.b64encode(img.read()).decode()}" for img in uploaded_edit]
-                            current_images = new_images or f.get("images", [])
-
-                            if st.form_submit_button("Save"):
-                                st.session_state.findings[i] = {
-                                    "id": e_id, "title": e_title, "host": e_host, "severity": e_sev,
-                                    "cvss": e_cvss, "description": e_desc, "remediation": e_rem,
-                                    "code": e_code, "images": current_images
-                                }
-                                st.success("Updated!")
-                                st.rerun()
-
-                    with col2:
-                        if st.button("Delete", key=f"del_{f.get('id')}_{i}"):
-                            st.session_state.findings.pop(i)
-                            st.success("Deleted!")
-                            st.rerun()
-
-                    if f.get("images"):
-                        cols = st.columns(3)
-                        for idx, img in enumerate(f["images"]):
-                            with cols[idx % 3]:
-                                st.image(img, use_column_width=True)
-        else:
-            st.info("No findings yet.")
+                with st.expander(f"**{f['id']}** - {f['title']} | {f['host']} | {f['severity']}"):
+                    if st.button("Delete", key=f"del_{i}"):
+                        st.session_state.findings.pop(i)
+                        st.rerun()
 
     # ===================================================================
-    # TAB 2: IMPORT NESSUS / NMAP
+    # TAB 2: IMPORT NESSUS / NMAP / OPENVAS / BURP
     # ===================================================================
     with tab2:
-        st.subheader("Import Nessus / Nmap / OpenVAS")
-    
-        # === FILTRU SEVERITY – UNIFICAT PENTRU TOATE ===
+        st.subheader("Import Nessus / Nmap / OpenVAS / Burp")
+
+        # === FILTRU SEVERITY UNIFICAT ===
         severity_options = ["Informational", "Low", "Moderate", "High", "Critical"]
         min_severity = st.selectbox(
             "Minimum Severity to Import",
             options=severity_options,
-            index=2,  # default: Moderate
+            index=2,
             key="import_min_severity"
         )
         severity_order = {"Critical": 4, "High": 3, "Moderate": 2, "Low": 1, "Informational": 0}
         min_level = severity_order.get(min_severity, 0)
-    
-        # === UPLOADER UNIFICAT ===
+
+        # === UPLOADER ===
         uploaded_file = st.file_uploader(
-            "Încarcă raport (.nessus, .xml pentru Nmap/OpenVAS)",
+            "Încarcă raport (.nessus, .xml pentru Nmap/OpenVAS/Burp)",
             type=["nessus", "xml"],
             key="import_file"
         )
-    
+
         if uploaded_file and st.button("Importă Raport", type="primary"):
             with st.spinner("Se procesează raportul..."):
                 imported = 0
                 current_findings = st.session_state.findings
-    
+                file_ext = uploaded_file.name.split(".")[-1].lower()
+
                 try:
-                    file_content = uploaded_file.read()
-                    file_ext = uploaded_file.name.split(".")[-1].lower()
-    
                     if file_ext == "nessus":
-                        # === PARSING NESSUS ===
-                        root = ET.fromstring(file_content)
+                        root = ET.parse(uploaded_file).getroot()
                         for report_item in root.findall(".//ReportItem"):
                             plugin_id = report_item.get("pluginID")
-                            host = report_item.find("host") or report_item.find("../host")
-                            host = host.text if host is not None else "Unknown"
+                            host_elem = report_item.find("../host") or report_item.find("host")
+                            host = host_elem.text if host_elem is not None else "Unknown"
                             sev = int(report_item.get("severity", 0))
-    
-                            # FILTRU SEVERITY
+
                             nessus_sev_map = {0: "Informational", 1: "Low", 2: "Moderate", 3: "High", 4: "Critical"}
                             severity = nessus_sev_map.get(sev, "Unknown")
                             if severity_order.get(severity, 0) < min_level:
-                                continue  # sare peste
-    
+                                continue
+
                             plugin_name = report_item.find("plugin_name")
                             plugin_name = plugin_name.text if plugin_name is not None else "Unknown"
-    
                             desc = report_item.find("description")
                             sol = report_item.find("solution")
                             cvss_elem = report_item.find("cvss3_base_score")
-    
+
                             new_finding = {
                                 "id": f"NESSUS-{plugin_id}",
                                 "title": plugin_name,
@@ -178,31 +145,37 @@ def render():
                                 "code": "",
                                 "images": []
                             }
-    
                             if not any(f["id"] == new_finding["id"] for f in current_findings):
                                 current_findings.append(new_finding)
                                 imported += 1
-    
+
                     elif file_ext == "xml":
-                        # === PARSING NMAP SAU OPENVAS ===
+                        file_content = uploaded_file.read()
                         root = ET.fromstring(file_content)
-    
-                        # Detectăm dacă e Nmap sau OpenVAS
-                        is_openvas = root.find(".//result") is not None or root.find(".//results/result") is not None
-                        is_nmap = root.find(".//host") is not None and root.find(".//port") is not None
-    
-                        if is_openvas:
-                            # === OPENVAS ===
-                            from parsers.openvas import parse_openvas
-                            all_findings = parse_openvas(uploaded_file)  # pasăm fișierul
+
+                        # === DETECT BURP ===
+                        if root.tag == "issues" or root.find(".//issue") is not None:
+                            from parsers.burp import parse_burp
+                            all_findings = parse_burp(uploaded_file)
                             for f in all_findings:
                                 if severity_order.get(f.get("severity", "Informational"), 0) >= min_level:
                                     if not any(ex["title"] == f["title"] and ex["host"] == f["host"] for ex in current_findings):
                                         current_findings.append(f)
                                         imported += 1
-    
-                        elif is_nmap:
-                            # === NMAP ===
+
+                        # === DETECT OPENVAS ===
+                        elif root.find(".//result") is not None or root.find(".//results/result") is not None:
+                            from parsers.openvas import parse_openvas
+                            all_findings = parse_openvas(uploaded_file)
+                            for f in all_findings:
+                                sev = f.get("severity", "Informational")
+                                if severity_order.get(sev, 0) >= min_level:
+                                    if not any(ex["title"] == f["title"] and ex["host"] == f["host"] for ex in current_findings):
+                                        current_findings.append(f)
+                                        imported += 1
+
+                        # === DETECT NMAP ===
+                        elif root.find(".//host") is not None and root.find(".//port") is not None:
                             for host in root.findall(".//host"):
                                 addr = host.find("address").get("addr")
                                 for port in host.findall(".//port"):
@@ -210,23 +183,22 @@ def render():
                                         portid = port.get("portid")
                                         service = port.find("service")
                                         svc_name = service.get("name", "unknown") if service is not None else "unknown"
-    
-                                        new_finding = {
-                                            "id": f"NMAP-{addr}:{portid}",
-                                            "title": f"Open Port {portid} ({svc_name})",
-                                            "host": addr,
-                                            "severity": "Informational",
-                                            "cvss": 0.0,
-                                            "description": f"Port {portid} open on {addr}",
-                                            "remediation": "Close if not required",
-                                            "code": "",
-                                            "images": []
-                                        }
                                         if severity_order["Informational"] >= min_level:
+                                            new_finding = {
+                                                "id": f"NMAP-{addr}:{portid}",
+                                                "title": f"Open Port {portid} ({svc_name})",
+                                                "host": addr,
+                                                "severity": "Informational",
+                                                "cvss": 0.0,
+                                                "description": f"Port {portid} open on {addr}",
+                                                "remediation": "Close if not required",
+                                                "code": "",
+                                                "images": []
+                                            }
                                             if not any(f["id"] == new_finding["id"] for f in current_findings):
                                                 current_findings.append(new_finding)
                                                 imported += 1
-    
+
                     # === FINALIZARE ===
                     st.session_state.findings = current_findings
                     if imported > 0:
@@ -234,7 +206,7 @@ def render():
                     else:
                         st.info(f"Nicio vulnerabilitate ≥ **{min_severity}** sau toate deja importate.")
                     st.rerun()
-    
+
                 except Exception as e:
                     st.error(f"Eroare la import: {e}")
                     st.code(str(e)[:1000])

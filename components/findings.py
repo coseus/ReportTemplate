@@ -116,6 +116,31 @@ def render():
     # TAB 2: IMPORT NESSUS / NMAP
     # ===================================================================
     with tab2:
+        # components/findings.py – ADAUGĂ ÎN TAB-UL FINDINGS
+        st.subheader("📥 Import OpenVAS Report")
+        
+        openvas_file = st.file_uploader("Încarcă raport OpenVAS (.xml)", type="xml", key="openvas_uploader")
+        
+        if openvas_file and st.button("Importă OpenVAS → Findings", type="primary"):
+            with st.spinner("Se parsează raportul OpenVAS..."):
+                from parsers.openvas import parse_openvas
+                
+                new_findings = parse_openvas(openvas_file)
+                
+                if new_findings:
+                    # Adaugă la findings existente
+                    current = st.session_state.get("findings", [])
+                    # Evită duplicate pe titlu + host
+                    for nf in new_findings:
+                        if not any(f["title"] == nf["title"] and f["host"] == nf["host"] for f in current):
+                            current.append(nf)
+                    
+                    st.session_state.findings = current
+                    st.success(f"Importat {len(new_findings)} findings din OpenVAS!")
+                    st.rerun()
+                else:
+                    st.error("Nu s-au găsit vulnerabilități sau fișier invalid.")
+                    
         st.markdown("### Import Nessus (.nessus) or Nmap (.xml)")
         uploaded_file = st.file_uploader("Upload file", type=["nessus", "xml"], key="import_uploader")
 

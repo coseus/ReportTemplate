@@ -118,25 +118,59 @@ def render():
     with tab2:
         # components/findings.py – ADAUGĂ ÎN TAB-UL FINDINGS
 # components/findings.py
+# components/findings.py – ADAUGĂ ASTA ÎN TAB-UL FINDINGS
     st.subheader("Import OpenVAS Report")
     
-    openvas_file = st.file_uploader("Încarcă raport OpenVAS (.xml)", type="xml")
+    # === FILTRU SEVERITY ===
+    severity_options = ["Informational", "Low", "Moderate", "High", "Critical"]
+    min_severity = st.selectbox(
+        "Minimum Severity to Import",
+        options=severity_options,
+        index=2,  # default: Moderate
+        key="openvas_min_severity"
+    )
+    
+    openvas_file = st.file_uploader("Încarcă raport OpenVAS (.xml)", type="xml", key="openvas_file")
     
     if openvas_file and st.button("Importă OpenVAS", type="primary"):
-        with st.spinner("Se procesează..."):
+        with st.spinner("Se procesează raportul OpenVAS..."):
             from parsers.openvas import parse_openvas
-            new_findings = parse_openvas(openvas_file)
             
-            if new_findings:
-                current = st.session_state.get("findings", [])
-                for nf in new_findings:
-                    if not any(f["title"] == nf["title"] and f["host"] == nf["host"] for f in current):
-                        current.append(nf)
-                st.session_state.findings = current
-                st.success(f"Importate {len(new_findings)} findings!")
-                st.rerun()
-            else:
+            # 1. Parsează toate findings-urile
+            all_findings = parse_openvas(openvas_file)
+            
+            if not all_findings:
                 st.warning("Fișier valid, dar fără vulnerabilități.")
+                st.stop()
+    
+            # 2. MAPARE SEVERITY → INDEX PENTRU FILTRARE
+            severity_order = {"Critical": 4, "High": 3, "Moderate": 2, "Low": 1, "Informational": 0}
+            min_level = severity_order.get(min_severity, 0)
+    
+            # 3. FILTRARE DUPĂ SEVERITY
+            filtered_findings = [
+                f for f in all_findings
+                if severity_order.get(f.get("severity", "Informational"), 0) >= min_level
+            ]
+    
+            if not filtered_findings:
+                st.info(f"Nicio vulnerabilitate ≥ **{min_severity}**.")
+                st.stop()
+    
+            # 4. ADAUGĂ LA FINDINGS (fără duplicate)
+            current = st.session_state.get("findings", [])
+            added = 0
+            for nf in filtered_findings:
+                if not any(
+                    f["title"] == nf["title"] and f["host"] == nf["host"]
+                    for f in current
+                ):
+                    current.append(nf)
+                    added += 1
+    
+            st.session_state.findings = current
+            st.success(f"Importate {added} findings (≥ {min_severity})!")
+            st.rerun()
                     
         st.markdown("### Import Nessus (.nessus) or Nmap (.xml)")
         uploaded_file = st.file_uploader("Upload file", type=["nessus", "xml"], key="import_uploader")

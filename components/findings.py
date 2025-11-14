@@ -116,136 +116,125 @@ def render():
     # TAB 2: IMPORT NESSUS / NMAP
     # ===================================================================
     with tab2:
-        # components/findings.py – ADAUGĂ ÎN TAB-UL FINDINGS
-# components/findings.py
-# components/findings.py – ADAUGĂ ASTA ÎN TAB-UL FINDINGS
-        st.subheader("Import OpenVAS Report")
-        
-        # === FILTRU SEVERITY ===
+        st.subheader("Import Nessus / Nmap / OpenVAS")
+    
+        # === FILTRU SEVERITY – UNIFICAT PENTRU TOATE ===
         severity_options = ["Informational", "Low", "Moderate", "High", "Critical"]
         min_severity = st.selectbox(
             "Minimum Severity to Import",
             options=severity_options,
             index=2,  # default: Moderate
-            key="openvas_min_severity"
+            key="import_min_severity"
         )
-        
-        openvas_file = st.file_uploader("Încarcă raport OpenVAS (.xml)", type="xml", key="openvas_file")
-        
-        if openvas_file and st.button("Importă OpenVAS", type="primary"):
-            with st.spinner("Se procesează raportul OpenVAS..."):
-                from parsers.openvas import parse_openvas
-                
-                # 1. Parsează toate findings-urile
-                all_findings = parse_openvas(openvas_file)
-                
-                if not all_findings:
-                    st.warning("Fișier valid, dar fără vulnerabilități.")
-                    st.stop()
-        
-                # 2. MAPARE SEVERITY → INDEX PENTRU FILTRARE
-                severity_order = {"Critical": 4, "High": 3, "Moderate": 2, "Low": 1, "Informational": 0}
-                min_level = severity_order.get(min_severity, 0)
-        
-                # 3. FILTRARE DUPĂ SEVERITY
-                filtered_findings = [
-                    f for f in all_findings
-                    if severity_order.get(f.get("severity", "Informational"), 0) >= min_level
-                ]
-        
-                if not filtered_findings:
-                    st.info(f"Nicio vulnerabilitate ≥ **{min_severity}**.")
-                    st.stop()
-        
-                # 4. ADAUGĂ LA FINDINGS (fără duplicate)
-                current = st.session_state.get("findings", [])
-                added = 0
-                for nf in filtered_findings:
-                    if not any(
-                        f["title"] == nf["title"] and f["host"] == nf["host"]
-                        for f in current
-                    ):
-                        current.append(nf)
-                        added += 1
-        
-                st.session_state.findings = current
-                st.success(f"Importate {added} findings (≥ {min_severity})!")
-                st.rerun()
-                    
-        st.markdown("### Import Nessus (.nessus) or Nmap (.xml)")
-        uploaded_file = st.file_uploader("Upload file", type=["nessus", "xml"], key="import_uploader")
-
-        if uploaded_file:
-            min_severity = st.selectbox(
-                "Minimum Severity to Import",
-                ["Informational", "Low", "Moderate", "High", "Critical"],
-                index=2
-            )
-            sev_map = {"Informational": 0, "Low": 1, "Moderate": 2, "High": 3, "Critical": 4}
-            min_val = sev_map[min_severity]
-
-            if st.button("Import Selected", type="primary"):
+        severity_order = {"Critical": 4, "High": 3, "Moderate": 2, "Low": 1, "Informational": 0}
+        min_level = severity_order.get(min_severity, 0)
+    
+        # === UPLOADER UNIFICAT ===
+        uploaded_file = st.file_uploader(
+            "Încarcă raport (.nessus, .xml pentru Nmap/OpenVAS)",
+            type=["nessus", "xml"],
+            key="import_file"
+        )
+    
+        if uploaded_file and st.button("Importă Raport", type="primary"):
+            with st.spinner("Se procesează raportul..."):
+                imported = 0
+                current_findings = st.session_state.findings
+    
                 try:
+                    file_content = uploaded_file.read()
                     file_ext = uploaded_file.name.split(".")[-1].lower()
-                    tree = ET.parse(uploaded_file)
-                    root = tree.getroot()
-                    imported = 0
-
+    
                     if file_ext == "nessus":
-                        # Nessus v2 XML structure
-                        for report_host in root.findall(".//ReportHost"):
-                            host = report_host.get("name")
-                            for item in report_host.findall("ReportItem"):
-                                sev = int(item.get("severity", "0"))
-                                if sev < min_val:
-                                    continue
-
-                                plugin_id = item.get("pluginID")
-                                plugin_name = item.find("plugin_name")
-                                plugin_name = plugin_name.text if plugin_name is not None else "Unknown"
-
-                                desc = item.find("description")
-                                sol = item.find("solution")
-                                cvss_elem = item.find("cvss3_base_score")
-
-                                st.session_state.findings.append({
-                                    "id": f"NESSUS-{plugin_id}",
-                                    "title": plugin_name,
-                                    "host": host,
-                                    "severity": {0: "Informational", 1: "Low", 2: "Moderate", 3: "High", 4: "Critical"}.get(sev, "Unknown"),
-                                    "cvss": float(cvss_elem.text) if cvss_elem is not None and cvss_elem.text else 0.0,
-                                    "description": (desc.text[:500] + "...") if desc is not None and desc.text else "",
-                                    "remediation": sol.text if sol is not None and sol.text else "",
-                                    "code": "",
-                                    "images": []
-                                })
+                        # === PARSING NESSUS ===
+                        root = ET.fromstring(file_content)
+                        for report_item in root.findall(".//ReportItem"):
+                            plugin_id = report_item.get("pluginID")
+                            host = report_item.find("host") or report_item.find("../host")
+                            host = host.text if host is not None else "Unknown"
+                            sev = int(report_item.get("severity", 0))
+    
+                            # FILTRU SEVERITY
+                            nessus_sev_map = {0: "Informational", 1: "Low", 2: "Moderate", 3: "High", 4: "Critical"}
+                            severity = nessus_sev_map.get(sev, "Unknown")
+                            if severity_order.get(severity, 0) < min_level:
+                                continue  # sare peste
+    
+                            plugin_name = report_item.find("plugin_name")
+                            plugin_name = plugin_name.text if plugin_name is not None else "Unknown"
+    
+                            desc = report_item.find("description")
+                            sol = report_item.find("solution")
+                            cvss_elem = report_item.find("cvss3_base_score")
+    
+                            new_finding = {
+                                "id": f"NESSUS-{plugin_id}",
+                                "title": plugin_name,
+                                "host": host,
+                                "severity": severity,
+                                "cvss": float(cvss_elem.text) if cvss_elem is not None and cvss_elem.text else 0.0,
+                                "description": (desc.text[:500] + "...") if desc is not None and desc.text else "",
+                                "remediation": sol.text if sol is not None and sol.text else "",
+                                "code": "",
+                                "images": []
+                            }
+    
+                            if not any(f["id"] == new_finding["id"] for f in current_findings):
+                                current_findings.append(new_finding)
                                 imported += 1
-
+    
                     elif file_ext == "xml":
-                        # Nmap
-                        for host in root.findall(".//host"):
-                            addr = host.find("address").get("addr")
-                            for port in host.findall(".//port"):
-                                if port.find("state").get("state") == "open":
-                                    portid = port.get("portid")
-                                    service = port.find("service")
-                                    svc_name = service.get("name", "unknown") if service is not None else "unknown"
-                                    st.session_state.findings.append({
-                                        "id": f"NMAP-{addr}:{portid}",
-                                        "title": f"Open Port {portid} ({svc_name})",
-                                        "host": addr,
-                                        "severity": "Informational",
-                                        "cvss": 0.0,
-                                        "description": f"Port {portid} open on {addr}",
-                                        "remediation": "Close if not required",
-                                        "code": "",
-                                        "images": []
-                                    })
-                                    imported += 1
-
-                    st.success(f"Imported **{imported}** findings!")
+                        # === PARSING NMAP SAU OPENVAS ===
+                        root = ET.fromstring(file_content)
+    
+                        # Detectăm dacă e Nmap sau OpenVAS
+                        is_openvas = root.find(".//result") is not None or root.find(".//results/result") is not None
+                        is_nmap = root.find(".//host") is not None and root.find(".//port") is not None
+    
+                        if is_openvas:
+                            # === OPENVAS ===
+                            from parsers.openvas import parse_openvas
+                            all_findings = parse_openvas(uploaded_file)  # pasăm fișierul
+                            for f in all_findings:
+                                if severity_order.get(f.get("severity", "Informational"), 0) >= min_level:
+                                    if not any(ex["title"] == f["title"] and ex["host"] == f["host"] for ex in current_findings):
+                                        current_findings.append(f)
+                                        imported += 1
+    
+                        elif is_nmap:
+                            # === NMAP ===
+                            for host in root.findall(".//host"):
+                                addr = host.find("address").get("addr")
+                                for port in host.findall(".//port"):
+                                    if port.find("state").get("state") == "open":
+                                        portid = port.get("portid")
+                                        service = port.find("service")
+                                        svc_name = service.get("name", "unknown") if service is not None else "unknown"
+    
+                                        new_finding = {
+                                            "id": f"NMAP-{addr}:{portid}",
+                                            "title": f"Open Port {portid} ({svc_name})",
+                                            "host": addr,
+                                            "severity": "Informational",
+                                            "cvss": 0.0,
+                                            "description": f"Port {portid} open on {addr}",
+                                            "remediation": "Close if not required",
+                                            "code": "",
+                                            "images": []
+                                        }
+                                        if severity_order["Informational"] >= min_level:
+                                            if not any(f["id"] == new_finding["id"] for f in current_findings):
+                                                current_findings.append(new_finding)
+                                                imported += 1
+    
+                    # === FINALIZARE ===
+                    st.session_state.findings = current_findings
+                    if imported > 0:
+                        st.success(f"Importate **{imported}** findings (≥ {min_severity})!")
+                    else:
+                        st.info(f"Nicio vulnerabilitate ≥ **{min_severity}** sau toate deja importate.")
                     st.rerun()
-
+    
                 except Exception as e:
-                    st.error(f"Import failed: {e}")
+                    st.error(f"Eroare la import: {e}")
                     st.code(str(e)[:1000])

@@ -176,13 +176,19 @@ def render():
                         # === DETECT OPENVAS ===
                         elif root.find(".//result") is not None or root.find(".//results/result") is not None:
                             from parsers.openvas import parse_openvas
-                            all_findings = parse_openvas(uploaded_file)  # ACUM PRIMEȘTE FIȘIERUL CORECT
-                            for f in all_findings:
-                                sev = f.get("severity", "Informational")
-                                if severity_order.get(sev, 0) >= min_level:
-                                    if not any(ex["title"] == f["title"] and ex["host"] == f["host"] for ex in current_findings):
-                                        current_findings.append(f)
-                                        imported += 1
+                            try:
+                                all_findings = parse_openvas(uploaded_file)
+                                if not all_findings:
+                                    st.warning("Raport OpenVAS valid, dar fără vulnerabilități sau eroare de parsare.")
+                                else:
+                                    for f in all_findings:
+                                        sev = f.get("severity", "Informational")
+                                        if severity_order.get(sev, 0) >= min_level:
+                                            if not any(ex["title"] == f["title"] and ex["host"] == f["host"] for ex in current_findings):
+                                                current_findings.append(f)
+                                                imported += 1
+                            except Exception as e:
+                                st.error(f"Eroare la parsarea OpenVAS: {e}")
 
                         # === DETECT NMAP ===
                         elif root.find(".//host") is not None and root.find(".//port") is not None:

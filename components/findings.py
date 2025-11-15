@@ -176,7 +176,7 @@ def render():
                         # === DETECT OPENVAS ===
                         elif root.find(".//result") is not None or root.find(".//results/result") is not None:
                             from parsers.openvas import parse_openvas
-                            all_findings = parse_openvas(uploaded_file)
+                            all_findings = parse_openvas(uploaded_file)  # ACUM PRIMEȘTE FIȘIERUL CORECT
                             for f in all_findings:
                                 sev = f.get("severity", "Informational")
                                 if severity_order.get(sev, 0) >= min_level:

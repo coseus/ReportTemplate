@@ -4,6 +4,13 @@ import xml.etree.ElementTree as ET
 import base64
 from collections import Counter
 
+def get_severity_from_cvss(cvss):
+    if cvss >= 9.0: return "Critical"
+    elif cvss >= 7.0: return "High"
+    elif cvss >= 4.0: return "Moderate"
+    elif cvss > 0.0: return "Low"
+    else: return "Informational"
+        
 def render():
     st.subheader("Technical Findings")
 

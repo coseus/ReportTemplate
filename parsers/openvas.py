@@ -2,9 +2,12 @@
 import xml.etree.ElementTree as ET
 
 def parse_openvas(xml_file):
+    """
+    Parsează OpenVAS/GVM .xml și returnează findings
+    Suport: OpenVAS 9+, GVM 20+, 21+, 22+
+    """
     findings = []
     try:
-        # PRIMEȘTE FIȘIERUL (NU CONȚINUT)
         tree = ET.parse(xml_file)
         root = tree.getroot()
         results = root.findall('.//result') or root.findall('.//results/result')
@@ -28,16 +31,23 @@ def parse_openvas(xml_file):
                 try:
                     cvss = float(sev_elem.text.strip())
                     finding["cvss"] = cvss
-                    if cvss >= 9.0: finding["severity"] = "Critical"
-                    elif cvss >= 7.0: finding["severity"] = "High"
-                    elif cvss >= 4.0: finding["severity"] = "Moderate"
-                    elif cvss > 0.0: finding["severity"] = "Low"
-                except: pass
+                    if cvss >= 9.0:
+                        finding["severity"] = "Critical"
+                    elif cvss >= 7.0:
+                        finding["severity"] = "High"
+                    elif cvss >= 4.0:
+                        finding["severity"] = "Moderate"
+                    elif cvss > 0.0:
+                        finding["severity"] = "Low"
+                except:
+                    pass
 
+            # DESCRIERE
             desc = result.find('description')
             if desc is not None and desc.text:
                 finding["description"] = desc.text.strip()[:1000]
 
+            # RECOMANDARE
             sol = result.find('.//solution')
             if sol is not None and sol.text:
                 finding["remediation"] = sol.text.strip()[:800]
@@ -45,6 +55,7 @@ def parse_openvas(xml_file):
             findings.append(finding)
 
         return findings
+
     except Exception as e:
-        print(f"[OpenVAS Parser] Eroare: {e}")  # doar în consolă
-                return []
+        print(f"[OpenVAS Parser] Eroare: {e}")
+        return []

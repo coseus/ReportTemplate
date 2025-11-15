@@ -14,14 +14,11 @@ def parse_openvas(uploaded_file):
             return findings
 
         for result in results:
-            # === TITLU COMPLET (NVT name + OID) ===
+            # === TITLU ===
             name_elem = result.find('name')
-            title = "Unknown Vulnerability"
-            if name_elem is not None and name_elem.text:
-                title = name_elem.text.strip()
-            
-            nvt_elem = result.find('.//nvt')
-            oid = nvt_elem.get('oid', '') if nvt_elem is not None else ''
+            title = name_elem.text.strip() if name_elem is not None and name_elem.text else "Unknown"
+            nvt = result.find('.//nvt')
+            oid = nvt.get('oid', '') if nvt is not None else ''
             if oid:
                 title = f"{title} (OID: {oid})"
 
@@ -29,21 +26,37 @@ def parse_openvas(uploaded_file):
             host_elem = result.find('host')
             host = host_elem.text.strip() if host_elem is not None and host_elem.text else "Unknown"
 
-            # === SEVERITY ===
+            # === SEVERITATE – PRIORITATE: <threat> > <severity> ===
             severity = "Informational"
             cvss = 0.0
-            sev_elem = result.find('.//severity')
-            if sev_elem is not None and sev_elem.text:
-                try:
-                    cvss = float(sev_elem.text.strip())
-                    if cvss >= 9.0: severity = "Critical"
-                    elif cvss >= 7.0: severity = "High"
-                    elif cvss >= 4.0: severity = "Moderate"
-                    elif cvss > 0.0: severity = "Low"
-                except:
-                    pass
 
-            # === DESCRIERE + DETALII ===
+            # 1. Încearcă <threat> (High, Medium, Low)
+            threat_elem = result.find('threat')
+            if threat_elem is not None and threat_elem.text:
+                threat = threat_elem.text.strip().lower()
+                threat_map = {
+                    "high": "High",
+                    "medium": "Moderate",
+                    "low": "Low",
+                    "log": "Informational",
+                    "debug": "Informational"
+                }
+                severity = threat_map.get(threat, "Informational")
+
+            # 2. Dacă nu e <threat>, încearcă <severity> (CVSS)
+            if severity == "Informational":
+                sev_elem = result.find('.//severity')
+                if sev_elem is not None and sev_elem.text:
+                    try:
+                        cvss = float(sev_elem.text.strip())
+                        if cvss >= 9.0: severity = "Critical"
+                        elif cvss >= 7.0: severity = "High"
+                        elif cvss >= 4.0: severity = "Moderate"
+                        elif cvss > 0.0: severity = "Low"
+                    except:
+                        pass
+
+            # === DESCRIERE ===
             desc_elem = result.find('description')
             description = desc_elem.text.strip()[:1500] if desc_elem is not None and desc_elem.text else ""
 
@@ -51,7 +64,7 @@ def parse_openvas(uploaded_file):
             sol_elem = result.find('.//solution')
             remediation = sol_elem.text.strip()[:1000] if sol_elem is not None and sol_elem.text else ""
 
-            # === REFERINȚE (CVE, BID, etc.) ===
+            # === REFERINȚE ===
             references = []
             for ref in result.findall('.//ref'):
                 ref_type = ref.get('type', '').upper()
@@ -67,7 +80,7 @@ def parse_openvas(uploaded_file):
                 "cvss": cvss,
                 "description": description,
                 "remediation": remediation,
-                "code": "",  # OpenVAS nu are cod
+                "code": "",
                 "images": [],
                 "references": references
             })

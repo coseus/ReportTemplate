@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 def parse_openvas(xml_file):
     findings = []
     try:
+        # PRIMEȘTE FIȘIERUL (NU CONȚINUT)
         tree = ET.parse(xml_file)
         root = tree.getroot()
         results = root.findall('.//result') or root.findall('.//results/result')
@@ -21,7 +22,7 @@ def parse_openvas(xml_file):
                 "cvss": 0.0
             }
 
-            # SEVERITY
+            # SEVERITY DIN <severity>
             sev_elem = result.find('.//severity')
             if sev_elem is not None and sev_elem.text:
                 try:
@@ -35,15 +36,15 @@ def parse_openvas(xml_file):
 
             desc = result.find('description')
             if desc is not None and desc.text:
-                finding["description"] = desc.text.strip()
+                finding["description"] = desc.text.strip()[:1000]
 
             sol = result.find('.//solution')
             if sol is not None and sol.text:
-                finding["remediation"] = sol.text.strip()
+                finding["remediation"] = sol.text.strip()[:800]
 
             findings.append(finding)
 
         return findings
     except Exception as e:
-        print(f"[OpenVAS] Eroare: {e}")
+        st.error(f"OpenVAS parse error: {e}")
         return []

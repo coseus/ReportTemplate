@@ -76,13 +76,23 @@ def render():
                 st.rerun()
 
         # === LISTĂ FINDINGS ===
-        if st.session_state.findings:
-            st.markdown("### Current Findings")
-            for i, f in enumerate(st.session_state.findings):
-                with st.expander(f"**{f['id']}** - {f['title']} | {f['host']} | {f['severity']}"):
-                    if st.button("Delete", key=f"del_{i}"):
-                        st.session_state.findings.pop(i)
-                        st.rerun()
+# === LISTĂ FINDINGS (înlocuiește blocul cu asta) ===
+        # === LISTĂ FINDINGS ===
+            if st.session_state.findings:
+                st.markdown("### Current Findings")
+                for i, f in enumerate(st.session_state.findings):
+                    # GENEREAZĂ CHEIE UNICĂ CU id(f) + i
+                    unique_key = f"del_{id(f)}_{i}_{st.session_state.findings[i].get('id', '')}"
+                    with st.expander(f"**{f['id']}** - {f['title']} | {f['host']} | {f['severity']}"):
+                        col_del, col_edit = st.columns([1, 6])
+                        with col_del:
+                            if st.button("Delete", key=unique_key):
+                                st.session_state.findings.pop(i)
+                                st.rerun()
+                        with col_edit:
+                            st.caption("Click to expand for details")
+            else:
+                st.info("No findings yet.")
 
     # ===================================================================
     # TAB 2: IMPORT NESSUS / NMAP / OPENVAS / BURP

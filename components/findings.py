@@ -93,62 +93,62 @@ def render():
                 st.info("No findings yet.")
 
 
-    if st.session_state.findings:
-    st.markdown("### Current Findings")
-    for i, f in enumerate(st.session_state.findings):
-        with st.expander(f"**{f['id']}** - {f['title']} | {f['host']} | {f['severity']}"):
-            col1, col2 = st.columns([1, 6])
-            with col1:
-                if st.button("Delete", key=f"del_{id(f)}_{i}"):
-                    st.session_state.findings.pop(i)
-                    st.rerun()
-            with col2:
-                if st.button("Edit", key=f"edit_{id(f)}_{i}"):
-                    st.session_state.edit_index = i
-                    st.rerun()
-
-    # === FORMULAR DE EDIT (APARE DOAR DACĂ EDIT_INDEX EXISTĂ) ===
-    if "edit_index" in st.session_state:
-        idx = st.session_state.edit_index
-        f = st.session_state.findings[idx]
-
-        with st.expander(f"Edit {f['id']}", expanded=True):
-            col1, col2 = st.columns(2)
-            with col1:
-                new_id = st.text_input("ID", value=f.get("id", ""), key=f"edit_id_{idx}")
-                new_title = st.text_input("Title", value=f.get("title", ""), key=f"edit_title_{idx}")
-                new_host = st.text_input("Host", value=f.get("host", ""), key=f"edit_host_{idx}")
-            with col2:
-                new_sev = st.selectbox("Severity", ["Critical", "High", "Moderate", "Low", "Informational"],
-                                       index=["Critical", "High", "Moderate", "Low", "Informational"].index(f.get("severity", "Informational")),
-                                       key=f"edit_sev_{idx}")
-                new_cvss = st.number_input("CVSS", 0.0, 10.0, float(f.get("cvss", 0.0)), 0.1, key=f"edit_cvss_{idx}")
-
-            new_desc = st.text_area("Description", value=f.get("description", ""), height=120, key=f"edit_desc_{idx}")
-            new_rem = st.text_area("Remediation", value=f.get("remediation", ""), height=120, key=f"edit_rem_{idx}")
-
-            col_save, col_cancel = st.columns(2)
-            with col_save:
-                if st.button("Save Changes", type="primary", key=f"save_{idx}"):
-                    st.session_state.findings[idx] = {
-                        "id": new_id,
-                        "title": new_title,
-                        "host": new_host,
-                        "severity": new_sev,
-                        "cvss": new_cvss,
-                        "description": new_desc,
-                        "remediation": new_rem,
-                        "code": f.get("code", ""),
-                        "images": f.get("images", []),
-                        "references": f.get("references", [])
-                    }
-                    del st.session_state.edit_index
-                    st.success("Finding actualizat!")
-                    st.rerun()
-            with col_cancel:
-                if st.button("Cancel", key=f"cancel_{idx}"):
-                    del st.session_state.edit_index
-                    st.rerun()
+            if st.session_state.findings:
+            st.markdown("### Current Findings")
+            for i, f in enumerate(st.session_state.findings):
+                with st.expander(f"**{f['id']}** - {f['title']} | {f['host']} | {f['severity']}"):
+                    col1, col2 = st.columns([1, 6])
+                    with col1:
+                        if st.button("Delete", key=f"del_{id(f)}_{i}"):
+                            st.session_state.findings.pop(i)
+                            st.rerun()
+                    with col2:
+                        if st.button("Edit", key=f"edit_{id(f)}_{i}"):
+                            st.session_state.edit_index = i
+                            st.rerun()
+        
+            # === FORMULAR DE EDIT (APARE DOAR DACĂ EDIT_INDEX EXISTĂ) ===
+            if "edit_index" in st.session_state:
+                idx = st.session_state.edit_index
+                f = st.session_state.findings[idx]
+        
+                with st.expander(f"Edit {f['id']}", expanded=True):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        new_id = st.text_input("ID", value=f.get("id", ""), key=f"edit_id_{idx}")
+                        new_title = st.text_input("Title", value=f.get("title", ""), key=f"edit_title_{idx}")
+                        new_host = st.text_input("Host", value=f.get("host", ""), key=f"edit_host_{idx}")
+                    with col2:
+                        new_sev = st.selectbox("Severity", ["Critical", "High", "Moderate", "Low", "Informational"],
+                                               index=["Critical", "High", "Moderate", "Low", "Informational"].index(f.get("severity", "Informational")),
+                                               key=f"edit_sev_{idx}")
+                        new_cvss = st.number_input("CVSS", 0.0, 10.0, float(f.get("cvss", 0.0)), 0.1, key=f"edit_cvss_{idx}")
+        
+                    new_desc = st.text_area("Description", value=f.get("description", ""), height=120, key=f"edit_desc_{idx}")
+                    new_rem = st.text_area("Remediation", value=f.get("remediation", ""), height=120, key=f"edit_rem_{idx}")
+        
+                    col_save, col_cancel = st.columns(2)
+                    with col_save:
+                        if st.button("Save Changes", type="primary", key=f"save_{idx}"):
+                            st.session_state.findings[idx] = {
+                                "id": new_id,
+                                "title": new_title,
+                                "host": new_host,
+                                "severity": new_sev,
+                                "cvss": new_cvss,
+                                "description": new_desc,
+                                "remediation": new_rem,
+                                "code": f.get("code", ""),
+                                "images": f.get("images", []),
+                                "references": f.get("references", [])
+                            }
+                            del st.session_state.edit_index
+                            st.success("Finding actualizat!")
+                            st.rerun()
+                    with col_cancel:
+                        if st.button("Cancel", key=f"cancel_{idx}"):
+                            del st.session_state.edit_index
+                            st.rerun()
 
     # ===================================================================
     # TAB 2: IMPORT NESSUS / NMAP / OPENVAS / BURP

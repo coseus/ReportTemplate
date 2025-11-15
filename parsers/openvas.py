@@ -46,5 +46,5 @@ def parse_openvas(xml_file):
 
         return findings
     except Exception as e:
-        st.error(f"OpenVAS parse error: {e}")
-        return []
+        print(f"[OpenVAS Parser] Eroare: {e}")  # doar în consolă
+                return []

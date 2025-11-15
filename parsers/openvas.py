@@ -2,70 +2,75 @@
 import xml.etree.ElementTree as ET
 
 def parse_openvas(uploaded_file):
-    """
-    Primește un Streamlit UploadedFile
-    Citește conținutul ca bytes → parsează cu fromstring
-    """
     findings = []
     try:
-        # 1. Citește tot conținutul ca bytes
         file_bytes = uploaded_file.getvalue()
         if not file_bytes:
             return findings
 
-        # 2. Parsează direct din bytes
         root = ET.fromstring(file_bytes)
-
-        # 3. Găsește toate rezultatele
         results = root.findall('.//result') or root.findall('.//results/result')
         if not results:
-            return findings  # raport gol
+            return findings
 
         for result in results:
-            finding = {
-                "id": f"OPENVAS-{len(findings)+1:03d}",
-                "title": "Unknown",
-                "host": "Unknown",
-                "severity": "Informational",
-                "description": "",
-                "remediation": "",
-                "cvss": 0.0
-            }
-
-            # Titlu
+            # === TITLU COMPLET (NVT name + OID) ===
             name_elem = result.find('name')
+            title = "Unknown Vulnerability"
             if name_elem is not None and name_elem.text:
-                finding["title"] = name_elem.text.strip()[:150]
+                title = name_elem.text.strip()
+            
+            nvt_elem = result.find('.//nvt')
+            oid = nvt_elem.get('oid', '') if nvt_elem is not None else ''
+            if oid:
+                title = f"{title} (OID: {oid})"
 
-            # Host
+            # === HOST ===
             host_elem = result.find('host')
-            if host_elem is not None and host_elem.text:
-                finding["host"] = host_elem.text.strip()
+            host = host_elem.text.strip() if host_elem is not None and host_elem.text else "Unknown"
 
-            # Severitate (CVSS)
+            # === SEVERITY ===
+            severity = "Informational"
+            cvss = 0.0
             sev_elem = result.find('.//severity')
             if sev_elem is not None and sev_elem.text:
                 try:
                     cvss = float(sev_elem.text.strip())
-                    finding["cvss"] = cvss
-                    if cvss >= 9.0: finding["severity"] = "Critical"
-                    elif cvss >= 7.0: finding["severity"] = "High"
-                    elif cvss >= 4.0: finding["severity"] = "Moderate"
-                    elif cvss > 0.0: finding["severity"] = "Low"
+                    if cvss >= 9.0: severity = "Critical"
+                    elif cvss >= 7.0: severity = "High"
+                    elif cvss >= 4.0: severity = "Moderate"
+                    elif cvss > 0.0: severity = "Low"
                 except:
                     pass
 
-            # Descriere
+            # === DESCRIERE + DETALII ===
             desc_elem = result.find('description')
-            if desc_elem is not None and desc_elem.text:
-                finding["description"] = desc_elem.text.strip()[:1000]
+            description = desc_elem.text.strip()[:1500] if desc_elem is not None and desc_elem.text else ""
 
-            # Recomandare
+            # === RECOMANDARE ===
             sol_elem = result.find('.//solution')
-            if sol_elem is not None and sol_elem.text:
-                finding["remediation"] = sol_elem.text.strip()[:800]
+            remediation = sol_elem.text.strip()[:1000] if sol_elem is not None and sol_elem.text else ""
 
-            findings.append(finding)
+            # === REFERINȚE (CVE, BID, etc.) ===
+            references = []
+            for ref in result.findall('.//ref'):
+                ref_type = ref.get('type', '').upper()
+                ref_id = ref.get('id', '')
+                if ref_type and ref_id:
+                    references.append(f"{ref_type}: {ref_id}")
+
+            findings.append({
+                "id": f"OPENVAS-{len(findings)+1:03d}",
+                "title": title,
+                "host": host,
+                "severity": severity,
+                "cvss": cvss,
+                "description": description,
+                "remediation": remediation,
+                "code": "",  # OpenVAS nu are cod
+                "images": [],
+                "references": references
+            })
 
         return findings
 

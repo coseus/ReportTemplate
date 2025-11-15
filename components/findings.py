@@ -107,8 +107,8 @@ def render():
                                 st.session_state.edit_index = i
                                 st.rerun()
             
-                # === FORMULAR DE EDIT (APARE DOAR DACĂ EDIT_INDEX EXISTĂ) ===
-                # === BLOC DE EDITARE COMPLET (ÎNLOCUIEȘTE COMPLET BLOCUL TĂU) ===
+                # === FORMULAR DE EDIT 
+              
                 if "edit_index" in st.session_state:
                     idx = st.session_state.edit_index
                     f = st.session_state.findings[idx]
@@ -120,7 +120,6 @@ def render():
                             new_title = st.text_input("Title", value=f.get("title", ""), key=f"edit_title_{idx}")
                             new_host = st.text_input("Host", value=f.get("host", ""), key=f"edit_host_{idx}")
                         with col2:
-                            # CVSS + SEVERITATE VALIDATĂ
                             new_cvss = st.number_input("CVSS", 0.0, 10.0, float(f.get("cvss", 0.0)), 0.1, key=f"edit_cvss_{idx}")
                             expected_sev = get_severity_from_cvss(new_cvss)
                             new_sev = st.selectbox(
@@ -130,22 +129,22 @@ def render():
                                 key=f"edit_sev_{idx}"
                             )
                             if new_sev != expected_sev:
-                                st.warning(f"CVSS {new_cvss} → ar trebui să fie **{expected_sev}**")
+                                st.warning(f"CVSS {new_cvss} → ar trebui **{expected_sev}**")
                 
                         # === DESCRIERE + REMEDIERE ===
                         new_desc = st.text_area("Description", value=f.get("description", ""), height=120, key=f"edit_desc_{idx}")
                         new_rem = st.text_area("Remediation", value=f.get("remediation", ""), height=120, key=f"edit_rem_{idx}")
                 
-                        # === COD POC (NOU) ===
+                        # === COD POC – APARE ACUM! ===
                         new_code = st.text_area(
                             "Proof of Concept (Code)",
                             value=f.get("code", ""),
                             height=120,
-                            placeholder="curl -X POST http://target/login -d \"user=admin'--\"",
+                            placeholder="ex: curl -X POST ...",
                             key=f"edit_code_{idx}"
                         )
                 
-                        # === POZE (NOU) ===
+                        # === POZE – APARE ACUM! ===
                         st.markdown("### Screenshots")
                         current_images = f.get("images", [])
                         if current_images:
@@ -159,8 +158,9 @@ def render():
                                         current_images.pop(i)
                                         st.rerun()
                 
+                        # ÎNCARCĂ POZE NOI
                         uploaded_new = st.file_uploader(
-                            "Adaugă poze noi (PNG/JPG)",
+                            "Adaugă poze noi",
                             type=["png", "jpg", "jpeg"],
                             accept_multiple_files=True,
                             key=f"edit_upload_{idx}"
@@ -175,7 +175,7 @@ def render():
                         with col_save:
                             if st.button("Save Changes", type="primary", key=f"save_{idx}"):
                                 if new_sev != expected_sev:
-                                    st.error("Corectează severitatea înainte de salvare!")
+                                    st.error("Corectează severitatea!")
                                 else:
                                     st.session_state.findings[idx] = {
                                         "id": new_id,
@@ -185,18 +185,17 @@ def render():
                                         "cvss": new_cvss,
                                         "description": new_desc,
                                         "remediation": new_rem,
-                                        "code": new_code,
-                                        "images": new_images_b64,
+                                        "code": new_code,  # SALVAT
+                                        "images": new_images_b64,  # SALVATE
                                         "references": f.get("references", [])
                                     }
                                     del st.session_state.edit_index
-                                    st.success("Finding actualizat cu succes!")
+                                    st.success("Finding actualizat!")
                                     st.rerun()
                         with col_cancel:
                             if st.button("Cancel", key=f"cancel_{idx}"):
                                 del st.session_state.edit_index
                                 st.rerun()
-
     # ===================================================================
     # TAB 2: IMPORT NESSUS / NMAP / OPENVAS / BURP
     # ===================================================================

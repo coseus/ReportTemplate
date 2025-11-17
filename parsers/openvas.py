@@ -4,91 +4,76 @@ import xml.etree.ElementTree as ET
 def parse_openvas(uploaded_file):
     findings = []
     try:
-        file_bytes = uploaded_file.getvalue()
-        if not file_bytes:
-            return findings
+        root = ET.fromstring(uploaded_file.getvalue())
 
-        root = ET.fromstring(file_bytes)
-        # Găsește toate <error> (în acest format, rezultatele sunt în <error>)
-        errors = root.findall('.//error') or root.findall('.//results/error')
-        if not errors:
-            return findings
-
-        for error in errors:
-            finding = {
-                "id": f"OPENVAS-{len(findings)+1:03d}",
-                "title": "Unknown Vulnerability",
-                "host": "Unknown",
-                "severity": "Informational",
-                "description": "",
-                "remediation": "",
-                "cvss": 0.0
-            }
-
+        # Găsește TOATE rezultatele reale (nu doar error!)
+        results = root.findall('.//result') + root.findall('.//results/result')
+        
+        for result in results:
             # === HOST ===
-            host_elem = error.find('host')
-            if host_elem is not None and host_elem.text:
-                finding["host"] = host_elem.text.strip()
+            host_elem = result.find('host')
+            host = host_elem.text.strip() if host_elem is not None and host_elem.text else "Unknown"
 
-            # === TITLU (din <nvt><name>) ===
-            nvt_elem = error.find('.//nvt')
-            if nvt_elem is not None:
-                name_elem = nvt_elem.find('name')
-                if name_elem is not None and name_elem.text:
-                    finding["title"] = name_elem.text.strip()
+            # === TITLU + OID ===
+            name_elem = result.find('name')
+            title = name_elem.text.strip() if name_elem is not None and name_elem.text else "Unknown"
+            nvt = result.find('nvt')
+            oid = nvt.get('oid', '') if nvt is not None else ''
+            if oid:
+                title = f"{title} (OID: {oid})"
 
-                oid = nvt_elem.get('oid', '')
-                if oid:
-                    finding["title"] = f"{finding['title']} (OID: {oid})"
-
-            # === DESCRIERE ===
-            desc_elem = error.find('description')
-            if desc_elem is not None and desc_elem.text:
-                finding["description"] = desc_elem.text.strip()[:1000]
-
-            # === REMEDIATION (din <nvt><solution>) ===
-            sol_elem = nvt_elem.find('solution') if nvt_elem is not None else None
-            if sol_elem is not None and sol_elem.text:
-                finding["remediation"] = sol_elem.text.strip()[:800]
-
-            # === SEVERITY + CVSS ===
-            sev_elem = error.find('severity')
+            # === SEVERITY DIN <severity> (valoare reală, nu -3) ===
+            severity = "Informational"
+            cvss = 0.0
+            sev_elem = result.find('severity')
             if sev_elem is not None and sev_elem.text:
                 try:
-                    cvss = float(sev_elem.text.strip())
-                    finding["cvss"] = cvss
-                    if cvss >= 9.0:
-                        finding["severity"] = "Critical"
-                    elif cvss >= 7.0:
-                        finding["severity"] = "High"
-                    elif cvss >= 4.0:
-                        finding["severity"] = "Moderate"
-                    elif cvss > 0.0:
-                        finding["severity"] = "Low"
+                    cvss_val = float(sev_elem.text.strip())
+                    if cvss_val > 0:  # Ignoră -3, -1 etc.
+                        cvss = cvss_val
+                        if cvss >= 9.0: severity = "Critical"
+                        elif cvss >= 7.0: severity = "High"
+                        elif cvss >= 4.0: severity = "Moderate"
+                        elif cvss > 0.0: severity = "Low"
                 except:
                     pass
 
-            # === CVSS_BASE (fallback) ===
-            if finding["cvss"] == 0.0:
-                cvss_base_elem = nvt_elem.find('cvss_base') if nvt_elem is not None else None
+            # === FALLBACK: <nvt><cvss_base> (dacă severity e 0 sau negativ) ===
+            if cvss == 0.0:
+                cvss_base_elem = nvt.find('cvss_base') if nvt is not None else None
                 if cvss_base_elem is not None and cvss_base_elem.text:
                     try:
                         cvss = float(cvss_base_elem.text.strip())
-                        finding["cvss"] = cvss
-                        if cvss >= 9.0:
-                            finding["severity"] = "Critical"
-                        elif cvss >= 7.0:
-                            finding["severity"] = "High"
-                        elif cvss >= 4.0:
-                            finding["severity"] = "Moderate"
-                        elif cvss > 0.0:
-                            finding["severity"] = "Low"
+                        if cvss >= 9.0: severity = "Critical"
+                        elif cvss >= 7.0: severity = "High"
+                        elif cvss >= 4.0: severity = "Moderate"
+                        elif cvss > 0.0: severity = "Low"
                     except:
                         pass
 
-            findings.append(finding)
+            # === DESCRIERE ===
+            desc_elem = result.find('description')
+            description = desc_elem.text.strip()[:1200] if desc_elem is not None and desc_elem.text else ""
+
+            # === REMEDIATION ===
+            sol_elem = nvt.find('solution') if nvt is not None else None
+            remediation = sol_elem.text.strip()[:1000] if sol_elem is not None and sol_elem.text else "No specific solution provided."
+
+            findings.append({
+                "id": f"OPENVAS-{len(findings)+1:03d}",
+                "title": title,
+                "host": host,
+                "severity": severity,
+                "cvss": round(cvss, 1),
+                "description": description,
+                "remediation": remediation,
+                "code": "",
+                "images": [],
+                "references": []
+            })
 
         return findings
+
     except Exception as e:
         print(f"[OpenVAS Parser] Eroare: {e}")
         return []

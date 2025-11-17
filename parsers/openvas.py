@@ -9,84 +9,86 @@ def parse_openvas(uploaded_file):
             return findings
 
         root = ET.fromstring(file_bytes)
-        results = root.findall('.//result') or root.findall('.//results/result')
-        if not results:
+        # Găsește toate <error> (în acest format, rezultatele sunt în <error>)
+        errors = root.findall('.//error') or root.findall('.//results/error')
+        if not errors:
             return findings
 
-        for result in results:
-            # === TITLU ===
-            name_elem = result.find('name')
-            title = name_elem.text.strip() if name_elem is not None and name_elem.text else "Unknown"
-            nvt = result.find('.//nvt')
-            oid = nvt.get('oid', '') if nvt is not None else ''
-            if oid:
-                title = f"{title} (OID: {oid})"
+        for error in errors:
+            finding = {
+                "id": f"OPENVAS-{len(findings)+1:03d}",
+                "title": "Unknown Vulnerability",
+                "host": "Unknown",
+                "severity": "Informational",
+                "description": "",
+                "remediation": "",
+                "cvss": 0.0
+            }
 
             # === HOST ===
-            host_elem = result.find('host')
-            host = host_elem.text.strip() if host_elem is not None and host_elem.text else "Unknown"
+            host_elem = error.find('host')
+            if host_elem is not None and host_elem.text:
+                finding["host"] = host_elem.text.strip()
 
-            # === SEVERITATE – PRIORITATE: <threat> > <severity> ===
-            severity = "Informational"
-            cvss = 0.0
+            # === TITLU (din <nvt><name>) ===
+            nvt_elem = error.find('.//nvt')
+            if nvt_elem is not None:
+                name_elem = nvt_elem.find('name')
+                if name_elem is not None and name_elem.text:
+                    finding["title"] = name_elem.text.strip()
 
-            # 1. Încearcă <threat> (High, Medium, Low)
-            threat_elem = result.find('threat')
-            if threat_elem is not None and threat_elem.text:
-                threat = threat_elem.text.strip().lower()
-                threat_map = {
-                    "high": "High",
-                    "medium": "Moderate",
-                    "low": "Low",
-                    "log": "Informational",
-                    "debug": "Informational"
-                }
-                severity = threat_map.get(threat, "Informational")
+                oid = nvt_elem.get('oid', '')
+                if oid:
+                    finding["title"] = f"{finding['title']} (OID: {oid})"
 
-            # 2. Dacă nu e <threat>, încearcă <severity> (CVSS)
-            if severity == "Informational":
-                sev_elem = result.find('.//severity')
-                if sev_elem is not None and sev_elem.text:
+            # === DESCRIERE ===
+            desc_elem = error.find('description')
+            if desc_elem is not None and desc_elem.text:
+                finding["description"] = desc_elem.text.strip()[:1000]
+
+            # === REMEDIATION (din <nvt><solution>) ===
+            sol_elem = nvt_elem.find('solution') if nvt_elem is not None else None
+            if sol_elem is not None and sol_elem.text:
+                finding["remediation"] = sol_elem.text.strip()[:800]
+
+            # === SEVERITY + CVSS ===
+            sev_elem = error.find('severity')
+            if sev_elem is not None and sev_elem.text:
+                try:
+                    cvss = float(sev_elem.text.strip())
+                    finding["cvss"] = cvss
+                    if cvss >= 9.0:
+                        finding["severity"] = "Critical"
+                    elif cvss >= 7.0:
+                        finding["severity"] = "High"
+                    elif cvss >= 4.0:
+                        finding["severity"] = "Moderate"
+                    elif cvss > 0.0:
+                        finding["severity"] = "Low"
+                except:
+                    pass
+
+            # === CVSS_BASE (fallback) ===
+            if finding["cvss"] == 0.0:
+                cvss_base_elem = nvt_elem.find('cvss_base') if nvt_elem is not None else None
+                if cvss_base_elem is not None and cvss_base_elem.text:
                     try:
-                        cvss = float(sev_elem.text.strip())
-                        if cvss >= 9.0: severity = "Critical"
-                        elif cvss >= 7.0: severity = "High"
-                        elif cvss >= 4.0: severity = "Moderate"
-                        elif cvss > 0.0: severity = "Low"
+                        cvss = float(cvss_base_elem.text.strip())
+                        finding["cvss"] = cvss
+                        if cvss >= 9.0:
+                            finding["severity"] = "Critical"
+                        elif cvss >= 7.0:
+                            finding["severity"] = "High"
+                        elif cvss >= 4.0:
+                            finding["severity"] = "Moderate"
+                        elif cvss > 0.0:
+                            finding["severity"] = "Low"
                     except:
                         pass
 
-            # === DESCRIERE ===
-            desc_elem = result.find('description')
-            description = desc_elem.text.strip()[:1500] if desc_elem is not None and desc_elem.text else ""
-
-            # === RECOMANDARE ===
-            sol_elem = result.find('.//solution')
-            remediation = sol_elem.text.strip()[:1000] if sol_elem is not None and sol_elem.text else ""
-
-            # === REFERINȚE ===
-            references = []
-            for ref in result.findall('.//ref'):
-                ref_type = ref.get('type', '').upper()
-                ref_id = ref.get('id', '')
-                if ref_type and ref_id:
-                    references.append(f"{ref_type}: {ref_id}")
-
-            findings.append({
-                "id": f"OPENVAS-{len(findings)+1:03d}",
-                "title": title,
-                "host": host,
-                "severity": severity,
-                "cvss": cvss,
-                "description": description,
-                "remediation": remediation,
-                "code": "",
-                "images": [],
-                "references": references
-            })
+            findings.append(finding)
 
         return findings
-
     except Exception as e:
         print(f"[OpenVAS Parser] Eroare: {e}")
         return []

@@ -283,14 +283,12 @@ def render():
                                         imported += 1
 
                         # === DETECT OPENVAS ===
-                        elif root.find(".//result") is not None or root.find(".//results/result") is not None:
+                        elif root.find(".//result") is not None or root.find(".//results/result") is not None or root.find(".//error") is not None:
                             from parsers.openvas import parse_openvas
                             try:
-                                # NU .seek(0) → folosim getvalue()
                                 all_findings = parse_openvas(uploaded_file)
-                                
                                 if not all_findings:
-                                    st.warning("Raport OpenVAS valid, dar fără vulnerabilități găsite.")
+                                    st.warning("Raport OpenVAS valid, dar fără vulnerabilități.")
                                 else:
                                     for f in all_findings:
                                         sev = f.get("severity", "Informational")

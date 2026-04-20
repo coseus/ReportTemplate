@@ -1,7 +1,0 @@
-streamlit
-reportlab
-python-docx
-pandas
-lxml
-plotly
-kaleido

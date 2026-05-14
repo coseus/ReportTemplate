@@ -437,25 +437,6 @@ Generate PDF/DOCX/HTML
 
 ---
 
-# 🚀 Future Improvements
-
-Planned roadmap ideas:
-
-- Multi-user authentication
-- Role-based access
-- Docker deployment
-- Burp Suite parser
-- Nessus API integration
-- Jira integration
-- AI-assisted remediation
-- CVSS auto-scoring
-- Multi-language reporting
-- Dark/light themes
-- Cloud deployment
-- Client portals
-
----
-
 # 📦 Build Standalone Executable
 
 The repository already includes:
@@ -469,38 +450,6 @@ Can be extended using:
 - PyInstaller
 - Nuitka
 - cx_Freeze
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-Potential areas:
-
-- Parser integrations
-- Report templates
-- UI/UX improvements
-- Export optimizations
-- Performance enhancements
-- Unit testing
-- CI/CD pipelines
-
----
-
-# 📜 License
-
-Recommended licenses:
-
-- MIT
-- Apache 2.0
-- GPLv3
-
-Example:
-
-```text
-MIT License
-```
 
 ---
 

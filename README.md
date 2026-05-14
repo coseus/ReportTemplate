@@ -1,18 +1,49 @@
 # Pentest Report Generator
 
-Modern, enterprise-grade reporting platform for penetration testing engagements, built with **Streamlit**, **ReportLab**, and **Python**.
+<p align="center">
+  <img src="util/coseus_logo_slim.png" width="180">
+</p>
 
-Generate professional PDF and DOCX reports with automated parsing, advanced finding management, executive summaries, remediation tracking, walkthrough sections, charts, and branded corporate layouts.
+<p align="center">
+  <b>Enterprise-grade penetration testing reporting platform built with Python, Streamlit, and ReportLab.</b>
+</p>
 
 ---
 
-# 🚀 Features
+# 📌 Overview
+
+Pentest Report Generator is a modern offensive security reporting platform designed to streamline the creation of professional penetration testing reports.
+
+The platform automates the transformation of vulnerability scanner outputs into fully formatted PDF, DOCX, and HTML deliverables suitable for:
+
+- Penetration testing engagements
+- Vulnerability assessments
+- Internal security reviews
+- Red team operations
+- Compliance assessments
+- Executive reporting
+
+The application combines:
+
+- Automated vulnerability importing
+- Structured finding management
+- Rich evidence handling
+- Executive dashboards
+- Remediation roadmaps
+- Detailed attack walkthroughs
+- Enterprise-style PDF generation
+
+into a single streamlined workflow.
+
+---
+
+# ✨ Features
 
 ## 📥 Multi-Format Vulnerability Import
 
 Automatically import findings from:
 
-- Nessus (`.nessus` XML)
+- Nessus (`.nessus`)
 - OpenVAS / Greenbone XML
 - Nmap XML
 - CSV
@@ -21,79 +52,264 @@ Automatically import findings from:
 The parser automatically extracts:
 
 - Severity
-- CVSS score
-- CVE references
+- CVSS
+- CVEs
+- CWEs
 - Affected hosts
-- Descriptions
-- Impact
+- Services & ports
 - Recommendations
+- Descriptions
+- References
+- Evidence metadata
 
 ---
 
 ## 🧠 Advanced Findings Management
 
-- Full finding editor
+- Full manual finding editor
 - Severity filtering
-- Automatic renumbering (`6.1`, `6.2`, etc.)
-- Evidence image support
-- Base64 image handling
-- Screenshot deduplication
+- Dynamic finding numbering
+- CVSS integration
+- Host-based grouping
+- Evidence screenshots
+- Base64 image support
 - Code block formatting
-- Rich text sections
+- Rich text descriptions
+- Risk categorization
+- Technical + Executive reporting modes
 
 ---
 
-## 📊 Executive & Technical Reporting
+## 📊 Executive Reporting
 
-Generate complete enterprise-style reports including:
+Generate executive-focused dashboards and summaries including:
 
-- Executive Summary
-- Technical Findings
-- Risk Overview
-- Attack Path Documentation
-- Vulnerability Statistics
-- Host-based Summaries
-- Remediation Roadmaps
-- Detailed Walkthroughs
-- Additional Reports Section
+- Severity distribution
+- Risk overview
+- Total findings metrics
+- Risk trend visualization
+- Executive summaries
+- Critical asset visibility
+- Host exposure overview
 
 ---
 
-## 📄 Enterprise PDF & DOCX Export
+## 🛠️ Technical Reporting
 
-### PDF Features
+Generate detailed technical deliverables containing:
 
-- Corporate cover pages
-- Automatic Table of Contents
-- Optional CONFIDENTIAL watermark
-- Custom logo support
-- Severity badges
-- Per-host vulnerability heatmaps
-- Modern formatting
-- Section-based structure
-- Charts and metrics
-
-### DOCX Features
-
-- Structured findings
-- Corporate formatting
-- Reusable templates
-- Editable deliverables
+- Full findings
+- Evidence screenshots
+- Attack walkthroughs
+- Reproduction steps
+- Code snippets
+- Affected hosts
+- Protocol information
+- Remediation guidance
+- References & CVEs
 
 ---
 
-# 🏗️ Tech Stack
+## 📄 Export Formats
 
-| Component | Technology |
+Supported export formats:
+
+- PDF
+- DOCX
+- HTML
+
+---
+
+# 🖼️ Application Screenshots
+
+---
+
+## 🏠 Dashboard / General Information
+
+Main project configuration section containing:
+
+- Client information
+- Tester information
+- Logo upload
+- Executive summary
+- Watermark settings
+
+![Dashboard](screenshots/Dashboard.jpg)
+
+---
+
+## 📋 Scope & Assessment Details
+
+Configure:
+
+- Assessment overview
+- Scope
+- Scope exclusions
+- Engagement details
+- Client allowances
+
+![Scope](screenshots/Scope.jpg)
+
+---
+
+## 🔎 Findings Management
+
+Import scanner outputs and manage findings.
+
+Features:
+
+- Nessus/OpenVAS/Nmap importing
+- Manual findings
+- Severity filtering
+- Dynamic finding management
+
+![Findings](screenshots/Findings.jpg)
+
+---
+
+## 🧩 Additional Reports
+
+Add custom technical appendices:
+
+- Code snippets
+- Output logs
+- Custom screenshots
+- Extra technical details
+
+![Additional Reports](screenshots/Additional.jpg)
+
+---
+
+## 🧭 Detailed Walkthrough
+
+Create attack-chain walkthroughs with:
+
+- Screenshots
+- Exploitation steps
+- Code blocks
+- Lateral movement evidence
+
+![Detailed Walkthrough](screenshots/Detailed.jpg)
+
+---
+
+## 📈 Executive Summary
+
+Executive reporting dashboard with:
+
+- Severity charts
+- Vulnerability metrics
+- Risk summaries
+- Custom executive text
+
+![Executive Summary](screenshots/Executive.jpg)
+
+---
+
+## 🛡️ Remediation Roadmap
+
+Structured remediation planning:
+
+- Short-term actions
+- Medium-term actions
+- Long-term actions
+
+![Remediation](screenshots/Remediation.jpg)
+
+---
+
+## 📤 Export System
+
+Generate professional deliverables:
+
+- PDF reports
+- DOCX reports
+- HTML reports
+- Charts & analytics
+- Watermark support
+
+![Export 1](screenshots/Export1.jpg)
+
+![Export 2](screenshots/Export2.jpg)
+
+---
+
+# 📑 Generated Report Examples
+
+---
+
+## 📘 Report Cover Page
+
+Professional corporate-style cover page.
+
+![Cover Page](screenshots/CoverReport.jpg)
+
+---
+
+## 📚 Automatic Table of Contents
+
+Automatically generated TOC with section tracking.
+
+![TOC](screenshots/TOCReport.jpg)
+
+---
+
+## 🚨 Vulnerability Findings
+
+Structured vulnerability sections with:
+
+- CVSS
+- CWE
+- Recommendations
+- Impact
+- Evidence
+
+![Finding Example](screenshots/Finding1.jpg)
+
+![Finding Example 2](screenshots/Finding2.jpg)
+
+---
+
+## 🖼️ Evidence Integration
+
+Embedded screenshots and proof-of-concept evidence.
+
+![Server EOL](screenshots/ServerEOL.jpg)
+
+![Windows EOL](screenshots/WinEOL.jpg)
+
+---
+
+# 🏗️ Architecture
+
+## Core Components
+
+| Component | Description |
 |---|---|
-| Frontend | Streamlit |
-| PDF Engine | ReportLab |
-| DOCX Export | python-docx |
-| Data Processing | Pandas |
-| XML Parsing | lxml |
-| Charts | Plotly + Matplotlib |
-| Templates | Jinja2 |
-| Image Processing | Pillow |
+| Streamlit UI | Frontend interface |
+| Report Engine | PDF/DOCX/HTML generation |
+| Parser Engine | Scanner parsing |
+| Data Model | Centralized report structure |
+| Charting Module | Executive dashboards |
+| Evidence Handler | Image processing |
+| Export Pipeline | Final deliverables |
+
+---
+
+# 🧱 Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Core language |
+| Streamlit | Frontend |
+| ReportLab | PDF generation |
+| python-docx | DOCX generation |
+| Pandas | Data processing |
+| Plotly | Interactive charts |
+| Matplotlib | Reporting charts |
+| Pillow | Image handling |
+| Jinja2 | Templates |
+| lxml | XML parsing |
 
 ---
 
@@ -102,24 +318,24 @@ Generate complete enterprise-style reports including:
 ```bash
 ReportTemplate-main/
 │
-├── app.py                         # Main Streamlit application
-├── run.py                         # Runner script
-├── launcher.py                    # Launcher helper
-├── build_exe.py                   # Build executable utility
-├── setup_paths.py                 # Runtime path configuration
+├── app.py
+├── run.py
+├── launcher.py
+├── build_exe.py
+├── setup_paths.py
 │
 ├── data/
-│   └── saved_report.json          # Persisted report state
+│   └── saved_report.json
 │
 ├── report/
-│   ├── data_model.py              # Report schema
-│   ├── parsers.py                 # Nessus/OpenVAS/Nmap parsers
-│   ├── numbering.py               # Findings numbering logic
-│   ├── pdf_generator.py           # PDF generation engine
-│   ├── docx_generator.py          # DOCX generator
-│   ├── html_generator.py          # HTML rendering support
-│   ├── utils.py                   # Shared helpers
-│   └── sections/                  # Report section templates
+│   ├── data_model.py
+│   ├── parsers.py
+│   ├── numbering.py
+│   ├── pdf_generator.py
+│   ├── docx_generator.py
+│   ├── html_generator.py
+│   ├── utils.py
+│   └── sections/
 │
 ├── ui/
 │   ├── general_info.py
@@ -187,7 +403,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-After startup, open:
+Open:
 
 ```text
 http://localhost:8501
@@ -195,68 +411,53 @@ http://localhost:8501
 
 ---
 
-# 🧪 Supported Workflow
+# 🧪 Typical Workflow
 
 ```text
-Import Scan → Review Findings → Add Evidence → Generate PDF/DOCX
-```
-
-Typical workflow:
-
-1. Import scanner output
-2. Validate imported findings
-3. Add screenshots and code snippets
-4. Write executive summary
-5. Configure branding and metadata
-6. Generate final deliverables
-
----
-
-# 📸 Screenshots
-
-> Add screenshots here from the Streamlit UI and generated reports.
-
-Example:
-
-```md
-![Dashboard](screenshots/dashboard.png)
-![Findings](screenshots/findings.png)
-![Generated PDF](screenshots/report.png)
+Import Scan
+    ↓
+Review Findings
+    ↓
+Add Evidence
+    ↓
+Create Executive Summary
+    ↓
+Generate PDF/DOCX/HTML
 ```
 
 ---
 
-# 🔒 Intended Use
-
-This project is designed for:
+# 🔐 Designed For
 
 - Penetration testers
-- Red teams
 - Security consultants
 - Internal security teams
+- Red teams
+- Vulnerability management teams
 - Offensive security engagements
-- Vulnerability assessment reporting
 
 ---
 
-# 🛠️ Future Improvements
+# 🚀 Future Improvements
 
-Potential roadmap ideas:
+Planned roadmap ideas:
 
 - Multi-user authentication
-- Client portal
-- Dark mode UI
-- AI-assisted remediation generation
-- CVSS auto-calculation
-- Burp Suite import support
-- Jira integration
-- Markdown export
+- Role-based access
 - Docker deployment
+- Burp Suite parser
+- Nessus API integration
+- Jira integration
+- AI-assisted remediation
+- CVSS auto-scoring
 - Multi-language reporting
+- Dark/light themes
+- Cloud deployment
+- Client portals
 
 ---
 
-# 📦 Build Executable
+# 📦 Build Standalone Executable
 
 The repository already includes:
 
@@ -264,7 +465,7 @@ The repository already includes:
 build_exe.py
 ```
 
-This can be extended to package the application into a standalone executable using:
+Can be extended using:
 
 - PyInstaller
 - Nuitka
@@ -272,15 +473,50 @@ This can be extended to package the application into a standalone executable usi
 
 ---
 
+# 🤝 Contributing
+
+Contributions are welcome.
+
+Potential areas:
+
+- Parser integrations
+- Report templates
+- UI/UX improvements
+- Export optimizations
+- Performance enhancements
+- Unit testing
+- CI/CD pipelines
+
+---
+
+# 📜 License
+
+Recommended licenses:
+
+- MIT
+- Apache 2.0
+- GPLv3
+
+Example:
+
+```text
+MIT License
+```
+
+---
+
 # ⭐ Acknowledgements
 
 Built using:
 
+- Python
 - Streamlit
 - ReportLab
 - Plotly
 - Pandas
-- Python ecosystem
+- Matplotlib
+- Pillow
+- Jinja2
 
 ---
 
@@ -288,8 +524,11 @@ Built using:
 
 This project focuses on:
 
-- Professional deliverables
-- Corporate reporting standards
-- Automation of repetitive reporting tasks
-- Flexible extensibility
-- Offensive security workflows
+- Professional offensive security reporting
+- Enterprise deliverables
+- Automated reporting workflows
+- Reusable templates
+- Security consultant productivity
+- Modern pentest reporting standards
+
+The platform can be used both internally and in commercial consulting environments.

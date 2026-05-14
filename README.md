@@ -1,160 +1,295 @@
-### Modern, Automated, Enterprise-Grade Reporting for Offensive Security + Detail Walkthrough
+# Pentest Report Generator
 
-## 📌 Overview
+Modern, enterprise-grade reporting platform for penetration testing engagements, built with **Streamlit**, **ReportLab**, and **Python**.
 
-**Pentest Report Generator – Corporate Edition** este o aplicație completă, extensibilă și modernă pentru generarea de rapoarte profesionale de penetration testing (PDF & DOCX), cu suport pentru:
-
-- Import automat din **Nessus**, **OpenVAS**, **Nmap**, **CSV**, **JSON**
-- Editare avansată a finding-urilor, cu **evidence images + code blocks**
-- Structură corporată (Deloitte / KPMG style)
-- Export PDF cu:
-    - **Cover corporate**
-    - **Header de pagină cu logo**
-    - **Watermark opțional CONFIDENTIAL**
-    - **Table of Contents automat**
-    - **Findings numerotate 6.1, 6.2…**
-    - **Additional reports & scans**
-    - **Per-host vulnerability heatmap**
-    - **Badges colorate (Critical / High / etc)**
-
-Aplicația folosește **Streamlit** în front-end și **ReportLab** pentru generarea PDF-urilor enterprise-grade.
+Generate professional PDF and DOCX reports with automated parsing, advanced finding management, executive summaries, remediation tracking, walkthrough sections, charts, and branded corporate layouts.
 
 ---
 
-## ✨ Features
+# 🚀 Features
 
-### 🔍 Import Findings
+## 📥 Multi-Format Vulnerability Import
 
-- Import automat cu parsing avansat din:
-    - ✓ Nessus (.nessus XML)
-    - ✓ OpenVAS / Greenbone XML
-    - ✓ Nmap XML
-    - ✓ CSV custom
-    - ✓ JSON custom
-- Auto-mapping pentru:
-    - Severity
-    - Title
-    - Host
-    - CVSS
-    - CVE
-    - Description / Impact / Recommendation
+Automatically import findings from:
 
-### 📝 Findings Editor (Advanced)
+- Nessus (`.nessus` XML)
+- OpenVAS / Greenbone XML
+- Nmap XML
+- CSV
+- JSON
 
-- Editare completă pentru fiecare finding
-- Adăugare / ștergere **imagini (B64)** cu resize automat
-- Code blocks formatate
-- Deduplicare imagini
-- Filtrare după severitate
-- Renumbering automat 6.1, 6.2 …
+The parser automatically extracts:
 
-### 🧩 Additional Reports
-
-- Titlu + Description + Code + Evidențe (imagini)
-- Apărute în PDF sub capitolul 7.0
-
-### 📄 Export PDF & DOCX
-
-- Cover corporate
-- Watermark CONFIDENTIAL (opțional)
-- TOC automat
-- Formatting avansat (multiline, indentare exactă)
-- Vulnerability Summary (with badges + totals)
-- Per-host summary grid
-- Technical Findings full-corporate
-- Additional Reports corporate layout
+- Severity
+- CVSS score
+- CVE references
+- Affected hosts
+- Descriptions
+- Impact
+- Recommendations
 
 ---
 
-## 📂 Project Structure
+## 🧠 Advanced Findings Management
 
-```
-pentest_report/
+- Full finding editor
+- Severity filtering
+- Automatic renumbering (`6.1`, `6.2`, etc.)
+- Evidence image support
+- Base64 image handling
+- Screenshot deduplication
+- Code block formatting
+- Rich text sections
+
+---
+
+## 📊 Executive & Technical Reporting
+
+Generate complete enterprise-style reports including:
+
+- Executive Summary
+- Technical Findings
+- Risk Overview
+- Attack Path Documentation
+- Vulnerability Statistics
+- Host-based Summaries
+- Remediation Roadmaps
+- Detailed Walkthroughs
+- Additional Reports Section
+
+---
+
+## 📄 Enterprise PDF & DOCX Export
+
+### PDF Features
+
+- Corporate cover pages
+- Automatic Table of Contents
+- Optional CONFIDENTIAL watermark
+- Custom logo support
+- Severity badges
+- Per-host vulnerability heatmaps
+- Modern formatting
+- Section-based structure
+- Charts and metrics
+
+### DOCX Features
+
+- Structured findings
+- Corporate formatting
+- Reusable templates
+- Editable deliverables
+
+---
+
+# 🏗️ Tech Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | Streamlit |
+| PDF Engine | ReportLab |
+| DOCX Export | python-docx |
+| Data Processing | Pandas |
+| XML Parsing | lxml |
+| Charts | Plotly + Matplotlib |
+| Templates | Jinja2 |
+| Image Processing | Pillow |
+
+---
+
+# 📂 Project Structure
+
+```bash
+ReportTemplate-main/
 │
-├── app.py
-├── run.py
-├── setup_paths.py
+├── app.py                         # Main Streamlit application
+├── run.py                         # Runner script
+├── launcher.py                    # Launcher helper
+├── build_exe.py                   # Build executable utility
+├── setup_paths.py                 # Runtime path configuration
+│
+├── data/
+│   └── saved_report.json          # Persisted report state
+│
+├── report/
+│   ├── data_model.py              # Report schema
+│   ├── parsers.py                 # Nessus/OpenVAS/Nmap parsers
+│   ├── numbering.py               # Findings numbering logic
+│   ├── pdf_generator.py           # PDF generation engine
+│   ├── docx_generator.py          # DOCX generator
+│   ├── html_generator.py          # HTML rendering support
+│   ├── utils.py                   # Shared helpers
+│   └── sections/                  # Report section templates
 │
 ├── ui/
 │   ├── general_info.py
 │   ├── scope_tab.py
 │   ├── findings_tab.py
-│   ├── additional_reports.py
 │   ├── executive_summary_tab.py
-│   └── export_tab.py
-│
-├── report/
-│   ├── pdf_generator.py
-│   ├── docx_generator.py
-│   ├── parsers.py
-│   ├── data_model.py
-│   ├── numbering.py
-│   ├── utils.py
-│   └── sections/
-│       ├── section_1_0_confidentiality_and_legal.py
-│       ├── section_1_1_confidentiality_statement.py
-│       ├── section_1_2_disclaimer.py
-│       ├── section_1_3_contact_information.py
-│       ├── section_2_0_assessment_overview.py
-│       ├── section_2_1_assessment_details.py
-│       ├── section_2_2_scope.py
-│       ├── section_2_3_scope_exclusions.py
-│       ├── section_2_4_client_allowances.py
-│       ├── section_3_0_finding_severity_ratings.py
-│       ├── section_4_0_technical_findings.py
-│       ├── section_4_1_additional_reports.py
-│       ├── section_5_0_executive_summary.py
-│       └── section_5_1_vulnerability_summary.py
+│   ├── remediation_summary_tab.py
+│   ├── detailed_walkthrough_tab.py
+│   ├── additional_reports.py
+│   ├── export_tab.py
+│   └── reset.py
 │
 └── util/
+    ├── charting.py
+    ├── cvss_utils.py
     ├── helpers.py
-    └── io_manager.py
-
+    ├── json_utils.py
+    ├── i18n.py
+    ├── coseus.ico
+    └── coseus_logo_slim.png
 ```
 
 ---
 
-## 🚀 Installation
+# ⚙️ Installation
 
-### 1. Clone the repository
+## 1. Clone Repository
 
-```
-git clone https://github.com/<username>/pentest-report-generator
+```bash
+git clone https://github.com/YOUR_USERNAME/pentest-report-generator.git
 cd pentest-report-generator
-
 ```
 
-### 2. Create virtual environment
+---
 
-```
+## 2. Create Virtual Environment
+
+### Linux / macOS
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
-
 ```
 
-### 3. Install dependencies
+### Windows
 
-```
-pip install -r requirements.txt
-
+```powershell
+python -m venv venv
+venv\Scripts\activate
 ```
 
 ---
 
-## ▶️ Running the Application
+## 3. Install Dependencies
 
+```bash
+pip install -r requirements.txt
 ```
+
+---
+
+# ▶️ Running the Application
+
+```bash
 streamlit run app.py
-
 ```
 
-## 🖼️ Screenshots
+After startup, open:
 
-<img width="1370" height="1220" alt="image" src="https://github.com/user-attachments/assets/969d93d2-0fd9-4f5b-abae-c58fc7dce593" />
-<img width="1394" height="1115" alt="image 1" src="https://github.com/user-attachments/assets/a368fdce-70c1-4816-a6ef-0d27c48d0939" />
-<img width="1470" height="1783" alt="image 2" src="https://github.com/user-attachments/assets/9298096b-bb9c-4dcf-81a8-5275bfa75292" />
-<img width="1483" height="948" alt="image 3" src="https://github.com/user-attachments/assets/20bdcdbc-7f93-4809-bd16-bcc1ffc5f253" />
-<img width="1542" height="855" alt="image 4" src="https://github.com/user-attachments/assets/8fed0b9b-a948-468e-a3e4-40580570fb20" />
-<img width="1540" height="1180" alt="image 5" src="https://github.com/user-attachments/assets/e5009fa5-527f-4812-ac08-d042e3e9cb36" />
+```text
+http://localhost:8501
+```
 
+---
 
+# 🧪 Supported Workflow
+
+```text
+Import Scan → Review Findings → Add Evidence → Generate PDF/DOCX
+```
+
+Typical workflow:
+
+1. Import scanner output
+2. Validate imported findings
+3. Add screenshots and code snippets
+4. Write executive summary
+5. Configure branding and metadata
+6. Generate final deliverables
+
+---
+
+# 📸 Screenshots
+
+> Add screenshots here from the Streamlit UI and generated reports.
+
+Example:
+
+```md
+![Dashboard](screenshots/dashboard.png)
+![Findings](screenshots/findings.png)
+![Generated PDF](screenshots/report.png)
+```
+
+---
+
+# 🔒 Intended Use
+
+This project is designed for:
+
+- Penetration testers
+- Red teams
+- Security consultants
+- Internal security teams
+- Offensive security engagements
+- Vulnerability assessment reporting
+
+---
+
+# 🛠️ Future Improvements
+
+Potential roadmap ideas:
+
+- Multi-user authentication
+- Client portal
+- Dark mode UI
+- AI-assisted remediation generation
+- CVSS auto-calculation
+- Burp Suite import support
+- Jira integration
+- Markdown export
+- Docker deployment
+- Multi-language reporting
+
+---
+
+# 📦 Build Executable
+
+The repository already includes:
+
+```bash
+build_exe.py
+```
+
+This can be extended to package the application into a standalone executable using:
+
+- PyInstaller
+- Nuitka
+- cx_Freeze
+
+---
+
+# ⭐ Acknowledgements
+
+Built using:
+
+- Streamlit
+- ReportLab
+- Plotly
+- Pandas
+- Python ecosystem
+
+---
+
+# 💡 Notes
+
+This project focuses on:
+
+- Professional deliverables
+- Corporate reporting standards
+- Automation of repetitive reporting tasks
+- Flexible extensibility
+- Offensive security workflows

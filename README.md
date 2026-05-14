@@ -134,7 +134,8 @@ Main project configuration section containing:
 - Executive summary
 - Watermark settings
 
-![Dashboard](screenshots/Dashboard.jpg)
+<img width="1656" height="963" alt="Dashboard" src="https://github.com/user-attachments/assets/0f8f5889-09a4-4918-9c78-12483f623161" />
+
 
 ---
 
@@ -148,7 +149,8 @@ Configure:
 - Engagement details
 - Client allowances
 
-![Scope](screenshots/Scope.jpg)
+<img width="1636" height="845" alt="Scope" src="https://github.com/user-attachments/assets/4a11aa90-5ba1-41de-a08d-abb23b154784" />
+
 
 ---
 
@@ -163,7 +165,7 @@ Features:
 - Severity filtering
 - Dynamic finding management
 
-![Findings](screenshots/Findings.jpg)
+<img width="1646" height="619" alt="Findings" src="https://github.com/user-attachments/assets/d3b2f220-e971-488e-80d2-d4d1f78bd1e2" />
 
 ---
 
@@ -176,7 +178,7 @@ Add custom technical appendices:
 - Custom screenshots
 - Extra technical details
 
-![Additional Reports](screenshots/Additional.jpg)
+<img width="1636" height="787" alt="Additional" src="https://github.com/user-attachments/assets/17bc2078-00e8-4934-96b4-0942ca871fdc" />
 
 ---
 
@@ -189,7 +191,7 @@ Create attack-chain walkthroughs with:
 - Code blocks
 - Lateral movement evidence
 
-![Detailed Walkthrough](screenshots/Detailed.jpg)
+<img width="1641" height="792" alt="Detailed" src="https://github.com/user-attachments/assets/bbddc40d-5256-4a9a-a774-c9a5ac0c09bf" />
 
 ---
 
@@ -202,7 +204,7 @@ Executive reporting dashboard with:
 - Risk summaries
 - Custom executive text
 
-![Executive Summary](screenshots/Executive.jpg)
+<img width="1528" height="897" alt="Executive" src="https://github.com/user-attachments/assets/8a74f949-2686-475d-8874-a158456d9171" />
 
 ---
 
@@ -214,7 +216,7 @@ Structured remediation planning:
 - Medium-term actions
 - Long-term actions
 
-![Remediation](screenshots/Remediation.jpg)
+<img width="1539" height="867" alt="Remediation" src="https://github.com/user-attachments/assets/94d8aaf7-6964-4aca-b261-14b00f0bb576" />
 
 ---
 
@@ -228,9 +230,11 @@ Generate professional deliverables:
 - Charts & analytics
 - Watermark support
 
-![Export 1](screenshots/Export1.jpg)
+<img width="1710" height="997" alt="Export1" src="https://github.com/user-attachments/assets/48f87516-9049-4f51-911c-6f5ac16ee6e8" />
 
-![Export 2](screenshots/Export2.jpg)
+<img width="1710" height="620" alt="Export2" src="https://github.com/user-attachments/assets/e07ae849-3777-4589-995c-3d3fb88e96c7" />
+
+
 
 ---
 
@@ -242,7 +246,7 @@ Generate professional deliverables:
 
 Professional corporate-style cover page.
 
-![Cover Page](screenshots/CoverReport.jpg)
+<img width="789" height="783" alt="CoverReport" src="https://github.com/user-attachments/assets/71c44365-02f7-4d9b-8f13-0a5fb01ba595" />
 
 ---
 
@@ -250,7 +254,7 @@ Professional corporate-style cover page.
 
 Automatically generated TOC with section tracking.
 
-![TOC](screenshots/TOCReport.jpg)
+<img width="753" height="543" alt="TOCReport" src="https://github.com/user-attachments/assets/0a1e0c46-f74a-4ef0-ae19-e56f0557fe53" />
 
 ---
 
@@ -264,9 +268,7 @@ Structured vulnerability sections with:
 - Impact
 - Evidence
 
-![Finding Example](screenshots/Finding1.jpg)
-
-![Finding Example 2](screenshots/Finding2.jpg)
+<img width="722" height="673" alt="Finding1" src="https://github.com/user-attachments/assets/42ea22f8-013a-449c-8f0b-f244d317647a" />
 
 ---
 
@@ -274,10 +276,7 @@ Structured vulnerability sections with:
 
 Embedded screenshots and proof-of-concept evidence.
 
-![Server EOL](screenshots/ServerEOL.jpg)
-
-![Windows EOL](screenshots/WinEOL.jpg)
-
+<img width="731" height="935" alt="Finding2" src="https://github.com/user-attachments/assets/8914904f-6c10-48b0-a114-3eb154d00b76" />
 ---
 
 # 🏗️ Architecture
